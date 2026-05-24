@@ -1,0 +1,3074 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Painel Comercial — Metas, Ranking, Semana</title>
+<style>
+:root{
+  --bg:#0b1220; --text:#e9edf7; --muted:rgba(233,237,247,.72);
+  --border:rgba(255,255,255,.12); --shadow:0 10px 30px rgba(0,0,0,.35);
+  --card:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 700px at 20% -10%, #1a2b55 0%, var(--bg) 55%), var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+.container{max-width:1380px;margin:0 auto;padding:16px 14px 26px}
+
+.header{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.h1{font-size:30px;font-weight:900;letter-spacing:.2px}
+.sub{color:var(--muted);font-size:13px}
+
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.control{display:flex;flex-direction:column;gap:6px}
+.control label{font-size:11px;color:rgba(233,237,247,.75)}
+/* filtros: fundo branco, texto preto */
+.select{
+  background:#fff;
+  color:#111;
+  border:1px solid rgba(0,0,0,.25);
+  border-radius:12px;
+  padding:10px 12px;
+  outline:none;
+  font-weight:700;
+}
+.btn{
+  background:#fff;color:#111;border:1px solid rgba(0,0,0,.25);
+  border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer;
+}
+.btn:active{transform:translateY(1px)}
+.pill{font-size:12px;color:rgba(233,237,247,.85);border:1px solid var(--border);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.04)}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 14px;box-shadow:var(--shadow)}
+.card .label{color:var(--muted);font-size:12px}
+.card .value{font-size:26px;font-weight:900;margin-top:4px}
+.card .mini{color:var(--muted);font-size:12px;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
+
+.span-3{grid-column:span 3}
+.span-4{grid-column:span 4}
+.span-6{grid-column:span 6}
+.span-8{grid-column:span 8}
+.span-12{grid-column:span 12}
+
+.section{margin-top:12px}
+.section-title{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:8px 0 10px}
+.section-title h2{margin:0;font-size:16px}
+.section-title .hint{color:var(--muted);font-size:12px}
+
+.table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden}
+.table th,.table td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px}
+.table th{text-align:left;color:rgba(233,237,247,.86);font-weight:800;background:rgba(255,255,255,.04);position:sticky;top:0}
+.table td.right,.table th.right{text-align:right}
+.table tr:hover td{background:rgba(255,255,255,.03)}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-size:12px;color:rgba(233,237,247,.92)}
+.badge.ok{border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10)}
+.badge.warn{border-color:rgba(255,215,0,.30);background:rgba(255,215,0,.10)}
+.badge.bad{border-color:rgba(255,107,107,.30);background:rgba(255,107,107,.10)}
+
+.progress{height:12px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.10)}
+.progress > div{height:100%;background:linear-gradient(90deg, rgba(255,79,79,.95), rgba(82,168,255,.95));width:0%}
+
+.note{color:var(--muted);font-size:12px;line-height:1.35}
+
+
+.badgecell{display:inline-flex;align-items:center;justify-content:center;min-width:70px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-weight:900}
+.badgecell.ok{border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.12)}
+.badgecell.warn{border-color:rgba(255,215,0,.30);background:rgba(255,215,0,.12)}
+.badgecell.bad{border-color:rgba(255,107,107,.30);background:rgba(255,107,107,.12)}
+.cell-target-bad{background:rgba(255,107,107,.18)}
+.cell-target-ok{background:rgba(53,208,127,.12)}
+
+
+.togglebar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tbtn{cursor:pointer;user-select:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:rgba(233,237,247,.92);font-weight:900}
+.tbtn.active{background:rgba(82,168,255,.18);border-color:rgba(82,168,255,.35)}
+.trend{display:inline-flex;align-items:center;gap:8px;font-weight:900}
+.trend.down{color:rgba(255,107,107,.95)}
+.trend.up{color:rgba(53,208,127,.95)}
+.trend.flat{color:rgba(233,237,247,.75)}
+.row-alert{outline:2px solid rgba(255,107,107,.22);background:linear-gradient(0deg, rgba(255,107,107,.10), rgba(255,107,107,.02))}
+.badgefire{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,165,0,.25);background:rgba(255,165,0,.10);font-weight:900;margin-left:10px}
+
+
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+.pager .pbtn{cursor:pointer;user-select:none;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:rgba(233,237,247,.92);font-weight:900}
+.pager .pbtn:active{transform:translateY(1px)}
+.pager .pill{margin-left:6px}
+
+@media (max-width:1180px){.span-3,.span-4{grid-column:span 6} .span-8{grid-column:span 12}}
+@media (max-width:760px){.span-3,.span-4,.span-6{grid-column:span 12} .h1{font-size:22px}}
+
+/* --- Light theme overrides (fundo branco) --- */
+:root{
+  --bg:#f5f6fa;
+  --text:#111827;
+  --muted:rgba(17,24,39,.65);
+  --border:rgba(17,24,39,.12);
+  --shadow:0 10px 25px rgba(17,24,39,.10);
+  --card:linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.90));
+}
+body{
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+.card, .panel, .kpi, .box, .tableWrap, .table-wrap{
+  background: var(--card) !important;
+}
+
+
+/* --- Extra ajustes de cores para o tema claro --- */
+.pill{
+  color: rgba(17,24,39,.88) !important;
+  background: rgba(17,24,39,.04) !important;
+  border-color: rgba(17,24,39,.18) !important;
+}
+.badge{
+  color: rgba(17,24,39,.88) !important;
+  background: rgba(17,24,39,.04) !important;
+  border-color: rgba(17,24,39,.18) !important;
+}
+.badge.ok{
+  border-color: rgba(34,197,94,.35) !important;
+  background: rgba(34,197,94,.10) !important;
+}
+.badge.warn{
+  border-color: rgba(245,158,11,.35) !important;
+  background: rgba(245,158,11,.10) !important;
+}
+.badge.bad{
+  border-color: rgba(239,68,68,.30) !important;
+  background: rgba(239,68,68,.10) !important;
+}
+.badgecell{
+  color: rgba(17,24,39,.88) !important;
+  background: rgba(17,24,39,.04) !important;
+  border-color: rgba(17,24,39,.18) !important;
+}
+.select, select, input{
+  color: rgba(17,24,39,.88) !important;
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(17,24,39,.18) !important;
+}
+.small, .sub, .hint, .muted{
+  color: rgba(17,24,39,.62) !important;
+}
+table th{
+  color: rgba(17,24,39,.70) !important;
+}
+table td{
+  color: rgba(17,24,39,.88) !important;
+}
+tr:hover td{
+  background: rgba(17,24,39,.03) !important;
+}
+
+
+.progress{
+  background: rgba(17,24,39,.06) !important;
+  border-color: rgba(17,24,39,.18) !important;
+}
+
+
+/* === Ajustes finais de contraste no tema escuro === */
+body.theme-dark .badgecell,
+body.theme-dark .badge,
+body.theme-dark .pill{
+  color: rgba(233,237,247,.96) !important;
+}
+
+body.theme-dark .badgecell.ok,
+body.theme-dark .badge.ok{ color: rgba(233,237,247,.98) !important; }
+body.theme-dark .badgecell.warn,
+body.theme-dark .badge.warn{ color: rgba(233,237,247,.98) !important; }
+body.theme-dark .badgecell.bad,
+body.theme-dark .badge.bad{ color: rgba(233,237,247,.98) !important; }
+
+/* % de meta / indicadores que às vezes herdam cor "apagada" */
+body.theme-dark .pct,
+body.theme-dark .percent,
+body.theme-dark .metaPct,
+body.theme-dark .statusPct,
+body.theme-dark .sub,
+body.theme-dark .muted,
+body.theme-dark .note,
+body.theme-dark .kpi-sub{
+  color: rgba(233,237,247,.78) !important;
+}
+body.theme-dark .badgecell .pct,
+body.theme-dark .badgecell .percent,
+body.theme-dark .badgecell .metaPct{
+  color: rgba(233,237,247,.96) !important;
+}
+
+
+/* === Tela 3 (clean): tabela compacta + barra de progresso === */
+.carouselSlide[data-idx="2"] .card{
+  /* aumenta o “respiro” do quadro na tela */
+  padding:18px 18px 22px;
+}
+.metaCleanWrap{
+  /* Mais “respiro” visual para leitura em TV/monitor */
+  padding:12px 6px 24px;
+}
+.metaCleanTable{ width:100%; min-width: 1050px; }
+.metaCleanTable th{ font-size:12px; letter-spacing:.3px; text-transform:uppercase; }
+.metaCleanTable td, .metaCleanTable th{ padding:14px 14px; }
+.metaCleanTable td:first-child{ font-weight:900; font-size:14px; }
+.metaCleanTable .totalRow td{ font-weight:900; }
+.metaCleanTable tr.totalRow{ background: rgba(255,255,255,.04); }
+body.theme-light .metaCleanTable tr.totalRow{ background: rgba(17,24,39,.05); }
+
+
+/* Semana cards (linha horizontal abaixo do quadro de metas) */
+.weekCardsRow{
+  display:flex;
+  gap:14px;
+  margin-top:16px;
+  width:100%;
+  flex-wrap:wrap; /* caso mês tenha 5+ semanas, quebra com elegância */
+}
+.weekCard{
+  flex:1;
+  min-width: 210px;
+  border-radius:16px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  box-shadow: 0 10px 24px rgba(0,0,0,.20);
+}
+body.theme-light .weekCard{
+  border-color: rgba(17,24,39,.12);
+  background: linear-gradient(180deg, rgba(17,24,39,.03), rgba(17,24,39,.01));
+  box-shadow: 0 10px 24px rgba(17,24,39,.08);
+}
+.weekCard .wkTitle{
+  font-weight:900;
+  letter-spacing:.3px;
+  font-size:12px;
+  color: rgba(233,237,247,.78);
+  text-transform:uppercase;
+}
+.weekCard .wkValue{
+  margin-top:8px;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.3px;
+}
+.weekCard .wkMini{
+  margin-top:6px;
+  color: rgba(233,237,247,.70);
+  font-size:12px;
+}
+.weekCard.active{
+  border-color: rgba(34,197,94,.55);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.16), 0 10px 26px rgba(0,0,0,.28);
+}
+body.theme-light .weekCard.active{
+  border-color: rgba(22,163,74,.60);
+  box-shadow: 0 0 0 3px rgba(22,163,74,.14), 0 10px 26px rgba(17,24,39,.10);
+}
+
+.pctWrap{ display:flex; align-items:center; gap:10px; justify-content:flex-end; }
+.pctBar{ width:110px; height:8px; border-radius:999px; background: rgba(255,255,255,.16); overflow:hidden; }
+body.theme-light .pctBar{ background: rgba(17,24,39,.16); }
+.pctFill{ height:100%; border-radius:999px; background: rgba(34,197,94,.90); }
+body.theme-light .pctFill{ background: rgba(34,197,94,.75); }
+.pctVal{ font-weight:900; font-variant-numeric: tabular-nums; }
+
+/* Botões (auto, tela, salvar, tema) com texto legível no escuro */
+body.theme-dark .btn,
+body.theme-dark button.btn,
+body.theme-dark #themeBtn,
+body.theme-dark #autoBtn,
+body.theme-dark #fsBtn,
+body.theme-dark #salvarAlvos{
+  color: rgba(233,237,247,.96) !important;
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+body.theme-dark .btn:hover,
+body.theme-dark button.btn:hover,
+body.theme-dark #themeBtn:hover,
+body.theme-dark #autoBtn:hover,
+body.theme-dark #fsBtn:hover,
+body.theme-dark #salvarAlvos:hover{
+  background: rgba(255,255,255,.09) !important;
+}
+
+/* Inputs/selects do cabeçalho (garante leitura do valor selecionado) */
+body.theme-dark select,
+body.theme-dark input{
+  color: rgba(233,237,247,.96) !important;
+}
+body.theme-dark option{
+  color:#111827 !important; /* dropdown do sistema */
+}
+
+
+/* Badge META BATIDA (vendedor) */
+.meta-batida{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  background:#16a34a;
+  color:#ffffff;
+  margin-left:10px;
+  border:1px solid rgba(0,0,0,.08);
+}
+body.theme-dark .meta-batida{
+  background:#22c55e;
+  color:#052e16;
+  border-color: rgba(255,255,255,.18);
+}
+
+
+/* ===== Carrossel (4 telas) ===== */
+.header{position:sticky;top:0;z-index:80;backdrop-filter:blur(10px);}
+.carouselViewport{position:relative;}
+.carouselSlide{display:none;}
+.carouselSlide.active{display:block;}
+.carouselNav{display:flex;align-items:center;gap:8px}
+.carouselNav .pbtn{width:38px;height:34px;border-radius:12px}
+.carouselDots{display:flex;gap:6px}
+.carouselDot{width:10px;height:10px;border-radius:999px;border:1px solid rgba(255,255,255,.35);opacity:.7;cursor:pointer}
+.carouselDot.active{opacity:1;transform:scale(1.1)}
+body.theme-light .carouselDot{border-color: rgba(0,0,0,.25)}
+
+
+/* Ajuste Carrossel 01: dar respiro do cabeçalho e centralizar melhor */
+.carouselSlide[data-idx="0"]{ 
+  padding-top: 22px; /* espaço abaixo do cabeçalho de filtros */
+}
+.carouselSlide[data-idx="0"] .section:first-child{
+  margin-top: 6px;
+}
+
+
+/* Tela 1 — Ritmo necessário + Alerta */
+.ritmoWrap{
+  margin-top:12px;
+}
+.ritmoCard{
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+}
+.ritmoTitle{
+  display:flex; align-items:center; gap:10px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.ritmoGrid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap:10px;
+}
+
+/* Projeção (mês) - card separado */
+.projCard{ padding:16px 18px; }
+.projGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+@media (max-width: 900px){
+  .projGrid{ grid-template-columns: 1fr; }
+}
+
+.ritmoKpi{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+.ritmoLbl{ font-size:12px; opacity:.85; }
+.ritmoVal{ font-size:20px; font-weight:800; margin-top:4px; }
+.ritmoAlert{
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800;
+}
+.ritmoAlert.ok{ color:#22c55e; }
+.ritmoAlert.bad{ color:#ef4444; }
+
+
+/* Ritmo (Tela 1): semáforo + projeção */
+.rtDot{ width:14px; height:14px; border-radius:999px; display:inline-block; margin-right:10px;
+  box-shadow:0 0 0 3px rgba(255,255,255,.05);
+  background:#ef4444;
+}
+.rtDot.ok{ background:#22c55e; }
+.rtDot.warn{ background:#f59e0b; }
+.rtDot.bad{ background:#ef4444; }
+.rtWrap{ display:flex; align-items:flex-start; gap:10px; }
+.rtText{ display:flex; flex-direction:column; gap:4px; }
+.rtTitle{ font-weight:900; font-size:16px; line-height:1.15; }
+.rtSub{ font-size:12px; opacity:.92; line-height:1.25; }
+.rtSub b{ font-weight:800; }
+
+
+/* FIX setas (modo escuro): fundo branco + seta preta */
+body:not(.theme-light) .pbtn,
+body:not(.theme-light) #slidePrev,
+body:not(.theme-light) #slideNext,
+body:not(.theme-light) #rankPrev,
+body:not(.theme-light) #rankNext{
+  background:#ffffff !important;
+  color:#000000 !important;
+  border:1px solid #e5e7eb !important;
+}
+body:not(.theme-light) .pbtn:hover,
+body:not(.theme-light) #slidePrev:hover,
+body:not(.theme-light) #slideNext:hover,
+body:not(.theme-light) #rankPrev:hover,
+body:not(.theme-light) #rankNext:hover{
+  background:#f3f4f6 !important;
+}
+
+
+/* hide source note */
+#sourceNote,.source-note,.footer-source,.footer-note{display:none!important;}
+
+/* === Quadro Meta x Realizado x Falta (Tela 3) === */
+.metaBoard{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:14px;
+}
+@media (max-width: 980px){
+  .metaBoard{ grid-template-columns: 1fr; }
+}
+.metaCol{
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+body.theme-light .metaCol{
+  border-color: rgba(17,24,39,.14);
+  background: rgba(17,24,39,.03);
+}
+.metaColTitle{
+  font-weight:900;
+  letter-spacing:.4px;
+  padding:12px 14px;
+  font-size:18px;
+  text-transform:uppercase;
+}
+.metaCol-meta .metaColTitle{ background:#0b4f71; color:#ffffff; }
+.metaCol-real .metaColTitle{ background:#0aa84f; color:#ffffff; }
+.metaCol-gap  .metaColTitle{ background:#e11d48; color:#ffffff; text-transform:none; }
+
+body.theme-dark .metaCol-meta .metaColTitle{ background:#0b4f71; }
+body.theme-dark .metaCol-real .metaColTitle{ background:#16a34a; color:#052e16; }
+body.theme-dark .metaCol-gap  .metaColTitle{ background:#dc2626; color:#ffffff; }
+
+.metaColBody{ padding:12px 14px 14px; }
+
+.metaProd{
+  padding:10px 0 12px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+body.theme-light .metaProd{
+  border-bottom-color: rgba(17,24,39,.12);
+}
+.metaProd:last-child{ border-bottom:none; padding-bottom:6px; }
+
+.metaProdName{
+  font-size:22px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.metaSubHead{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  font-weight:900;
+  font-size:12px;
+  opacity:.85;
+  margin:2px 0 6px;
+  text-transform:uppercase;
+}
+.metaSubHead.three{ grid-template-columns: 1fr 1fr .6fr; }
+
+.metaVals{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  align-items:baseline;
+}
+.metaVals.three{ grid-template-columns: 1fr 1fr .6fr; }
+.metaVal{
+  font-size:22px;
+  font-weight:900;
+  line-height:1.05;
+}
+.metaPct{
+  font-size:22px;
+  font-weight:900;
+  text-align:right;
+}
+.metaMuted{
+  font-size:12px;
+  opacity:.75;
+  margin-top:2px;
+}
+
+.meta-ok{color:#2ecc71;font-weight:600;}
+
+/* ===== Gráfico: Faturamento na Semana (Tela 1) ===== */
+.weekLegend{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start}
+.weekLegend .pill{background:rgba(255,255,255,.04)}
+#weekChart{width:100% !important; max-height:320px}
+body.theme-dark #weekChart{filter: drop-shadow(0 4px 18px rgba(0,0,0,.35))}
+
+</style>
+<style id="force-white-bg">body{background:#ffffff !important;}.meta-ok{color:#2ecc71;font-weight:600;}
+</style>
+
+
+<style id="themeToggleStyles">
+/* Toggle de tema (não altera layout) */
+#themeBtn{
+  display:flex; align-items:center; justify-content:center;
+  gap:6px;
+  padding:10px 12px;
+  min-width: 110px;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Tema claro (padrão) – nada agressivo, só garante legibilidade */
+body.theme-light{
+  background:#ffffff !important;
+}
+
+/* Tema escuro – reforça contraste (alguns textos do tema claro precisam de override) */
+body.theme-dark{
+  background: radial-gradient(1200px 700px at 15% -10%, rgba(86,204,242,.12), transparent 60%),
+              radial-gradient(900px 500px at 90% 0%, rgba(245,158,11,.10), transparent 55%),
+              #0b1220 !important;
+  color:#e9edf7 !important;
+}
+body.theme-dark .container,
+body.theme-dark .header,
+body.theme-dark .h1,
+body.theme-dark .section-title,
+body.theme-dark .section-subtitle,
+body.theme-dark .sub,
+body.theme-dark label,
+body.theme-dark th,
+body.theme-dark td{
+  color:#e9edf7 !important;
+}
+body.theme-dark .sub{
+  color: rgba(233,237,247,.72) !important;
+}
+
+body.theme-dark .card,
+body.theme-dark .section,
+body.theme-dark .panel,
+body.theme-dark .box,
+body.theme-dark .kpi-card{
+  background: rgba(255,255,255,.03) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.30) !important;
+}
+
+body.theme-dark .select,
+body.theme-dark select,
+body.theme-dark input{
+  background: rgba(255,255,255,.06) !important;
+  color:#e9edf7 !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+body.theme-dark .btn,
+body.theme-dark button{
+  color:#e9edf7 !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+/* Mantém cores de status (verde/vermelho) sem “lavar” */
+body.theme-dark .pos,
+body.theme-dark .positive,
+body.theme-dark .up{ color: #34d399 !important; }
+body.theme-dark .neg,
+body.theme-dark .negative,
+body.theme-dark .down{ color: #fb7185 !important; }
+
+/* ===== Fixes finais de contraste (Tema Escuro) ===== */
+body.theme-dark .muted,
+body.theme-dark .hint,
+body.theme-dark .small,
+body.theme-dark .meta,
+body.theme-dark .note,
+body.theme-dark .sub,
+body.theme-dark .kpi-sub,
+body.theme-dark .kpi-label,
+body.theme-dark .card-subtitle{
+  color: rgba(233,237,247,.78) !important;
+  opacity: 1 !important;
+}
+
+/* Títulos/valores dentro de cards e rankings */
+body.theme-dark .card *,
+body.theme-dark .kpi *,
+body.theme-dark .rank-card *,
+body.theme-dark .tile *,
+body.theme-dark .summary-card *{
+  color: inherit;
+}
+
+/* Inputs e selects (texto + placeholder) */
+body.theme-dark input,
+body.theme-dark select,
+body.theme-dark textarea{
+  color:#e9edf7 !important;
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder{
+  color: rgba(233,237,247,.60) !important;
+}
+
+/* Pills/badges sempre legíveis */
+body.theme-dark .pill,
+body.theme-dark .badge{
+  color:#e9edf7 !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+
+/* Cabeçalho (labels dos filtros) */
+body.theme-dark .control label{
+  color: rgba(233,237,247,.85) !important;
+}
+
+.meta-ok{color:#2ecc71;font-weight:600;}
+</style>
+
+
+<style id="evo-screen-styles">
+/* Tela 5 — visão executiva anual */
+.carouselSlide[data-idx="4"] .section-title h2,
+.carouselSlide[data-idx="4"] .section-title .hint,
+.carouselSlide[data-idx="4"] .pill{color:#fff !important}
+.evoYearCard{padding:18px 18px 22px}
+.evoTopStats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.evoStat{border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.04)}
+.evoStatLabel{font-size:12px;color:rgba(255,255,255,.78);margin-bottom:6px}
+.evoStatValue{font-size:30px;font-weight:900;color:#fff;line-height:1.05}
+.evoTimelineWrap{position:relative;margin:26px 4px 10px;padding:40px 16px 28px}
+.evoLine{position:absolute;left:16px;right:16px;top:86px;height:6px;border-radius:999px;background:linear-gradient(90deg, rgba(30,167,255,.18), rgba(30,167,255,.55));border:1px solid rgba(255,255,255,.12)}
+.evoPoints{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.evoPoint{position:relative;min-width:72px;text-align:center}
+.evoPointVal{color:#fff;font-weight:900;font-size:18px;margin-bottom:8px;white-space:nowrap}
+.evoPointDot{width:18px;height:18px;border-radius:999px;margin:0 auto;background:#1ea7ff;border:3px solid rgba(255,255,255,.88);box-shadow:0 0 0 6px rgba(30,167,255,.20)}
+.evoPoint.current .evoPointDot{background:#ff5b7f;box-shadow:0 0 0 8px rgba(255,91,127,.20)}
+.evoPoint.target .evoPointDot{background:#ffffff;border-color:#1ea7ff;box-shadow:0 0 0 8px rgba(255,255,255,.12)}
+.evoPointLbl{margin-top:10px;color:#fff;font-weight:800;font-size:14px}
+.evoTimelineFooter{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px}
+.evoVendorGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.evoVendorCard{border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 14px 16px;background:rgba(255,255,255,.04)}
+.evoVendorName{font-size:18px;font-weight:900;color:#fff;margin-bottom:8px}
+.evoVendorReal{font-size:30px;font-weight:900;color:#fff;line-height:1.05}
+.evoVendorMeta{margin-top:6px;color:rgba(255,255,255,.78);font-size:13px}
+.evoVendorPctRow{display:flex;justify-content:space-between;align-items:center;margin-top:10px;margin-bottom:8px}
+.evoVendorPct{color:#1ea7ff;font-size:22px;font-weight:900}
+.evoVendorBar{width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;border:1px solid rgba(255,255,255,.10)}
+.evoVendorBarFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1ea7ff,#ff5b7f);width:0%}
+@media (max-width:1180px){.evoVendorGrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:760px){.evoTopStats{grid-template-columns:1fr}.evoVendorGrid{grid-template-columns:1fr}.evoPointVal{font-size:14px}.evoPointLbl{font-size:12px}}
+</style>
+
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <div class="h1">Painel Comercial</div>
+      <div class="sub">Metas • Ranking (faturamento) • Preço médio por produto • Peso vendido</div>
+    </div>
+    <div class="controls">
+      <div class="control">
+        <label>Equipe</label>
+        <select id="teamSel" class="select">
+          <option value="Todos">Todos</option>
+          <option value="Equipe Interna">Equipe Interna</option>
+          <option value="Representantes">Representantes</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label>Tema</label>
+        <button id="themeBtn" class="btn" type="button" onclick="toggleTheme()" title="Alternar tema">🌙 Tema</button>
+      </div>
+
+      <div class="control">
+        <label>Ano</label>
+        <select id="yearSel" class="select"></select>
+      </div>
+      <div class="control">
+        <label>Mês</label>
+        <select id="monthSel" class="select"></select>
+      </div>
+      <div class="control">
+        <label>Semana</label>
+        <select id="weekSel" class="select"></select>
+      </div>
+      <div class="control">
+        <label>Auto</label>
+        <button id="autoBtn" class="btn" title="Alterna auto-rotação">ON</button>
+      </div>
+      <div class="control" style="min-width:auto">
+        <label>Tela</label>
+        <div class="carouselNav">
+          <button class="pbtn" id="slidePrev" title="Tela anterior">◀</button>
+          <button class="pbtn" id="slideNext" title="Próxima tela">▶</button>
+          <span class="pill" id="slideInfo">1/5</span>
+          <div class="carouselDots" aria-label="Páginas">
+            <div class="carouselDot" data-slide="0"></div>
+            <div class="carouselDot" data-slide="1"></div>
+            <div class="carouselDot" data-slide="2"></div>
+            <div class="carouselDot" data-slide="3"></div>
+            <div class="carouselDot" data-slide="4"></div>
+</div>
+        </div>
+      </div>
+
+      <div class="control">
+        <label>Tela</label>
+        <button id="fsBtn" class="btn" title="Tela cheia">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  
+<div class="carouselViewport" id="carouselViewport">
+  <div class="carouselSlide active" data-idx="0"><div class="grid" id="kpis"></div>
+
+  
+
+
+  <div class="section">
+    <div class="section-title">
+      <h2>Progresso da meta (mês)</h2>
+      <div class="hint">Realizado mensal / Meta mensal do time</div>
+    </div>
+    <div class="card span-12">
+      <div class="progress"><div id="progBar"></div></div>
+      <div class="mini" id="progText" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  
+
+<div class="grid" id="rankFechamentoWrap" style="margin-top:14px; display:none;">
+  <div class="card span-12">
+    <div class="section-title" style="margin:0 0 10px 0;">
+      <h2>🏁 Fechamento do mês — Ranking do time (% atingido)</h2>
+      <div class="hint">Vendedores ordenados por % da meta (mês selecionado)</div>
+    </div>
+    <div style="overflow:auto; max-height:420px; border-radius:14px; width:100%">
+      <table class="table" style="min-width:880px">
+        <thead>
+          <tr>
+            <th style="width:60px">#</th>
+            <th>Vendedor</th>
+            <th class="right">Realizado</th>
+            <th class="right">Meta</th>
+            <th class="right">% atingido</th>
+          </tr>
+        </thead>
+        <tbody id="rankFechamentoRows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="ritmoWrap" id="ritmoWrap" style="display:none">
+  <div class="card span-12 ritmoCard">
+    <div class="ritmoTitle">📈 Ritmo necessário para bater a meta</div>
+    <div class="ritmoGrid">
+      <div class="ritmoKpi">
+        <div class="ritmoLbl">Dias restantes</div>
+        <div class="ritmoVal" id="rtDias">—</div>
+      </div>
+      <div class="ritmoKpi">
+        <div class="ritmoLbl">Faturar por dia</div>
+        <div class="ritmoVal" id="rtFatDia">—</div>
+      </div>
+      <div class="ritmoKpi">
+        <div class="ritmoLbl">Kg por dia</div>
+        <div class="ritmoVal" id="rtKgDia">—</div>
+      </div>
+      <div class="ritmoKpi ritmoAlert" id="rtAlert">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:14px;">
+  <div class="card span-12 projCard" id="projWrap">
+        <div class="ritmoTitle">🔮 Projeção do mês (no ritmo atual)</div>
+        <div class="projGrid">
+          <div class="ritmoKpi">
+            <div class="ritmoLbl">Projeção (R$)</div>
+            <div class="ritmoVal" id="rtProj">—</div>
+          </div>
+          <div class="ritmoKpi">
+            <div class="ritmoLbl">% da meta</div>
+            <div class="ritmoVal" id="rtProjPct">—</div>
+          </div>
+        </div>
+
+
+
+
+
+
+      </div>
+</div>
+
+</div>
+
+
+
+<div class="carouselSlide" data-idx="1">
+<div class="section" id="weekChartSection">
+  <div class="section-title">
+    <h2>Faturamento na semana</h2>
+    <div class="hint">Semana selecionada vs semana anterior (Seg–Sex)</div>
+  </div>
+  <div class="card span-12">
+    <div class="weekLegend">
+      <span class="pill">Semana atual: <strong id="wkTotalAtual">—</strong></span>
+      <span class="pill">Semana anterior: <strong id="wkTotalPrev">—</strong></span>
+      <span class="pill">Melhor dia: <strong id="wkBestDay">—</strong></span>
+    </div>
+    <canvas id="weekChart" height="120" style="margin-top:10px"></canvas>
+    <div class="note" style="margin-top:10px">Dica: passe o mouse sobre os pontos para ver os valores. O melhor dia fica destacado.</div>
+  </div>
+</div>
+</div>
+
+<div class="carouselSlide" data-idx="2">
+  <div class="section">
+    <div class="section-title">
+      <h2>Meta mensal por produto</h2>
+      <div class="hint">Meta x Realizado x Falta (mês selecionado)</div>
+    </div>
+
+    <div class="card span-12">
+      <div class="metaCleanWrap">
+        <div style="overflow:auto; width:100%">
+          <table class="table metaCleanTable">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="right">Meta (R$)</th>
+                <th class="right">Realizado (R$)</th>
+                <th class="right">% Atingido</th>
+                <th class="right">Falta (R$)</th>
+                <th class="right">Meta (Kg)</th>
+                <th class="right">Real (Kg)</th>
+                <th class="right">Falta (Kg)</th>
+              </tr>
+            </thead>
+            <tbody id="metaProdRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="weekCardsRow" id="weekCardsRow"></div>
+
+      <div id="prevWeeksWrap" style="display:none; margin-top:14px">
+        <div class="note" id="prevWeeksLabel" style="margin:0 0 10px 0; opacity:.85"></div>
+        <div class="weekCardsRow" id="weekCardsRowPrev"></div>
+      </div>
+
+<div class="note" style="margin-top:16px; margin-bottom:4px">
+        *Metas mensais informadas manualmente. Realizado considera o mês selecionado (ignora filtro de semana).
+      </div>
+    </div>
+  </div>
+</div>
+<div class="carouselSlide" data-idx="3"><div class="section" id="secSellerResumo">
+    <div class="section-title">
+      <h2>Resumo por Vendedor (Meta • Preço médio • Peso vendido)</h2>
+      <div class="hint">Semáforo de % atingido + destaque de preço médio abaixo do alvo (mês selecionado)</div>
+    </div>
+
+    <div class="grid">
+      <div class="card span-12">
+        <div class="label">Preço alvo (R$/kg) — referência para o time (salva neste dispositivo)</div>
+        <div class="mini" style="margin-top:10px; gap:14px; align-items:flex-end; flex-wrap:wrap">
+          <div class="control" style="min-width:210px">
+            <label style="color:rgba(233,237,247,.75);font-size:11px">Cobre</label>
+            <input id="alvoCobre" class="select" type="number" step="0.01" placeholder="ex: 95.50" />
+          </div>
+          <div class="control" style="min-width:210px">
+            <label style="color:rgba(233,237,247,.75);font-size:11px">Barra</label>
+            <input id="alvoBarra" class="select" type="number" step="0.01" placeholder="ex: 30.00" />
+          </div>
+          <div class="control" style="min-width:210px">
+            <label style="color:rgba(233,237,247,.75);font-size:11px">Alumínio</label>
+            <input id="alvoAluminio" class="select" type="number" step="0.01" placeholder="ex: 33.50" />
+          </div>
+          <button id="salvarAlvos" class="btn" style="height:44px">Salvar</button>
+          <span class="pill">Célula vermelha = abaixo do alvo</span>
+        </div>
+      </div>
+
+      <div class="card span-12">
+        <div style="overflow:auto; max-height:520px; border-radius:14px; width:100%">
+          <table class="table" style="min-width:1100px">
+            <thead>
+              <tr>
+                <th rowspan="2">Vendedor</th>
+                <th rowspan="2" class="right">Meta</th>
+                <th rowspan="2" class="right">Realizado</th>
+                <th rowspan="2" class="right">A Cumprir</th>
+                <th rowspan="2" class="right">% Atingido</th>
+                <th colspan="3" style="text-align:center">Preço Médio (R$/kg)</th>
+                <th colspan="3" style="text-align:center">Peso Vendido (Kg)</th>
+              </tr>
+              <tr>
+                <th class="right">Cobre</th>
+                <th class="right">Barra</th>
+                <th class="right">Alumínio</th>
+                <th class="right">Cobre</th>
+                <th class="right">Barra</th>
+                <th class="right">Alumínio</th>
+              </tr>
+            </thead>
+            <tbody id="sellerMixRows"></tbody>
+          </table>
+        </div>
+
+        <div class="note" style="margin-top:10px">
+          Preço médio = Faturamento do produto ÷ Kg do produto (por vendedor). Peso vendido = soma do Kg por produto (por vendedor).
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="section">
+    <div class="card span-12">
+      <div class="note" id="foot"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="carouselSlide" data-idx="4">
+  <div class="section">
+    <div class="section-title">
+      <h2>Evolução anual acumulada</h2>
+      <div class="hint">Trajetória do ano até o momento e objetivo final</div>
+    </div>
+
+    <div class="card span-12 evoYearCard">
+      <div class="evoTopStats">
+        <div class="evoStat">
+          <div class="evoStatLabel">Realizado até agora</div>
+          <div class="evoStatValue" id="evoRealizadoAno">—</div>
+        </div>
+        <div class="evoStat">
+          <div class="evoStatLabel">% do objetivo anual</div>
+          <div class="evoStatValue" id="evoPctAno">—</div>
+        </div>
+        <div class="evoStat">
+          <div class="evoStatLabel">Falta para a meta</div>
+          <div class="evoStatValue" id="evoFaltaAno">—</div>
+        </div>
+      </div>
+
+      <div class="evoTimelineWrap">
+        <div class="evoLine"></div>
+        <div class="evoPoints" id="evoPoints"></div>
+      </div>
+
+      <div class="evoTimelineFooter">
+        <div class="pill">Início do ano</div>
+        <div class="pill" id="evoCurrentPill">Atual</div>
+        <div class="pill" id="evoTargetPill">Objetivo do ano: R$ 53,0 mi</div>
+      </div>
+    </div>
+
+    <div class="card span-12" style="margin-top:12px">
+      <div class="section-title" style="margin:0 0 10px 0">
+        <h2>Resumo por vendedor</h2>
+        <div class="hint">Acumulado, meta anual e percentual atingido</div>
+      </div>
+      <div class="evoVendorGrid" id="evoVendorGrid"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+// ===== DADOS DINÂMICOS VIA GOOGLE SHEETS / APPS SCRIPT =====
+// Cole aqui a URL /exec gerada no Apps Script do painel comercial.
+const API_URL = "https://script.google.com/macros/s/AKfycbzi2osrORcFrjnfxR2xl6_5z9g9e_u3ADVEOcpMfC7sfOrMmqN2hkDZDVgfAVQOpY81/exec";
+
+let DATA = null;
+
+function mostrarErroCargaDetalhado(mensagem, erro){
+  console.error(mensagem, erro || "");
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;inset:18px;z-index:99999;background:#fff;color:#111;border:1px solid #ddd;border-radius:14px;padding:18px;font-family:Arial;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:auto";
+  box.innerHTML = `
+    <h2 style="margin:0 0 10px">Erro ao carregar dados do painel</h2>
+    <p style="margin:0 0 10px">Verifique se a URL da API foi colada no campo <b>API_URL</b> e se a implantação do Apps Script está pública.</p>
+    <pre style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:10px">${String(mensagem)}
+${erro ? String(erro.stack || erro.message || erro) : ""}</pre>
+  `;
+  document.body.appendChild(box);
+}
+
+async function carregarDadosPainel(){
+  try{
+    if(!API_URL || API_URL === "COLE_A_URL_DA_API_AQUI"){
+      throw new Error("API_URL ainda não configurada no HTML.");
+    }
+
+    const resposta = await fetch(API_URL + (API_URL.includes("?") ? "&" : "?") + "t=" + Date.now());
+
+    if(!resposta.ok){
+      throw new Error("API respondeu HTTP " + resposta.status);
+    }
+
+    const json = await resposta.json();
+
+    if(!json || !json.config || !Array.isArray(json.tx)){
+      throw new Error("JSON inválido. A API precisa retornar { config: ..., tx: [...] }.");
+    }
+
+    DATA = json;
+    init();
+
+  }catch(erro){
+    mostrarErroCargaDetalhado("Falha ao carregar DATA via API.", erro);
+  }
+}
+
+function getMetaMensalForState(st){
+  const key = `${Number(st.year)}-${String(Number(st.month)).padStart(2,"0")}`;
+  return (DATA.config && DATA.config.metaMensalPorMes && DATA.config.metaMensalPorMes[key]) ? DATA.config.metaMensalPorMes[key] : (DATA.config.metaMensal || {});
+}
+function getMetaAnual(){ return (DATA.config && DATA.config.metaAnual) ? DATA.config.metaAnual : {}; }
+
+// Correções pontuais de Kg (quando o PDF traz casas decimais e foi lido arredondado)
+// Chave: nota|produto -> kg correto
+const KG_CORRECTIONS = {
+  "6752|Cobre": 12.4
+};
+function correctedKg(nota, produto, kg){
+  const k = `${nota||""}|${produto||""}`;
+  return (k in KG_CORRECTIONS) ? KG_CORRECTIONS[k] : kg;
+}
+
+
+// ---------- Utils ----------
+function brl(v){
+  if(v == null || !isFinite(v)) return "—";
+  return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v);
+}
+function num(v, d=0){
+  if(v == null || !isFinite(v)) return "—";
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits:d, minimumFractionDigits:d }).format(v);
+}
+function pct(v, d=1){
+  if(v == null || !isFinite(v)) return "—";
+  return v.toFixed(d) + "%";
+}
+function badge(p){
+  if(p >= 100) return '<span class="badge ok">Meta batida</span>';
+  if(p >= 80) return '<span class="badge warn">No ritmo</span>';
+  return '<span class="badge bad">Atenção</span>';
+}
+function medal(i){ return i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "🏅"; }
+
+// ---------- Alvos de preço (localStorage) ----------
+function loadPriceTargets(){
+  try{
+    const raw = localStorage.getItem("alvosPrecoProduto");
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { Cobre:null, Barra:null, "Alumínio":null };
+}
+function savePriceTargets(t){
+  try{ localStorage.setItem("alvosPrecoProduto", JSON.stringify(t)); }catch(e){}
+}
+function statusClassPct(p){
+  if(p >= 100) return "ok";
+  if(p >= 80) return "warn";
+  return "bad";
+}
+
+// ---------- Filters ----------
+let autoOn = true;
+let autoTimer = null;
+
+function populateYear(){
+  const ySel = document.getElementById("yearSel");
+  ySel.innerHTML = "";
+  DATA.config.filters.years.forEach(y=>{
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    ySel.appendChild(opt);
+  });
+}
+function populateMonth(year){
+  const mSel = document.getElementById("monthSel");
+  mSel.innerHTML = "";
+  const months = DATA.config.filters.monthsByYear[year] || [];
+  months.forEach(m=>{
+    const opt = document.createElement("option");
+    opt.value = m; opt.textContent = String(m).padStart(2,"0");
+    mSel.appendChild(opt);
+  });
+}
+function populateWeek(year, month){
+  const wSel = document.getElementById("weekSel");
+  wSel.innerHTML = "";
+  const key = `${year}-${String(month).padStart(2,"0")}`;
+  const weeks = DATA.config.filters.weeksByYearMonth[key] || [];
+  weeks.forEach(w=>{
+    const opt = document.createElement("option");
+    opt.value = w; opt.textContent = `Semana ${w}`;
+    wSel.appendChild(opt);
+  });
+}
+
+// ---------- Data selection ----------
+function getFilterState(){
+  return {
+    team: document.getElementById("teamSel").value,
+    year: Number(document.getElementById("yearSel").value),
+    month: Number(document.getElementById("monthSel").value),
+    week: Number(document.getElementById("weekSel").value),
+  };
+}
+function filterTx({team, year, month, week}){
+  return DATA.tx.filter(r=>{
+    if(r.ano !== year) return false;
+    if(r.mes !== month) return false;
+    if(team !== "Todos" && r.equipe !== team) return false;
+    if(week && r.semana !== week) return false;
+    return true;
+  });
+}
+function filterMonthTx({team, year, month}){
+  return DATA.tx.filter(r=>{
+    if(r.ano !== year) return false;
+    if(r.mes !== month) return false;
+    if(team !== "Todos" && r.equipe !== team) return false;
+    return true;
+  });
+}
+
+// ---------- Charts (SVG) ----------
+function renderBarChartSimple(el, rows, key, maxBars=10){
+  el.innerHTML = "";
+  const width = el.clientWidth || 1000;
+  const height = el.clientHeight || 260;
+  const padL = 70, padR = 20, padT = 18, padB = 46;
+  const innerW = Math.max(1, width - padL - padR);
+  const innerH = Math.max(1, height - padT - padB);
+
+  const data = rows.slice(0, maxBars);
+  const maxY = Math.max(1, ...data.map(r => (r[key]||0)));
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  // baseline
+  const base = document.createElementNS(svg.namespaceURI,"line");
+  base.setAttribute("x1", padL); base.setAttribute("x2", padL+innerW);
+  base.setAttribute("y1", padT+innerH); base.setAttribute("y2", padT+innerH);
+  base.setAttribute("stroke","rgba(255,255,255,.12)"); base.setAttribute("stroke-width","2");
+  svg.appendChild(base);
+
+  const barGap = 10;
+  const barW = Math.max(8, (innerW - barGap*(data.length-1)) / Math.max(1,data.length));
+
+  data.forEach((r,i)=>{
+    const v = (r[key]||0);
+    const h = (v/maxY) * innerH;
+    const x = padL + i*(barW+barGap);
+    const y = padT + (innerH - h);
+
+    const rect = document.createElementNS(svg.namespaceURI,"rect");
+    rect.setAttribute("x", x); rect.setAttribute("y", y);
+    rect.setAttribute("width", barW); rect.setAttribute("height", h);
+    rect.setAttribute("rx","10"); rect.setAttribute("ry","10");
+    rect.setAttribute("fill","rgba(82,168,255,.50)");
+    svg.appendChild(rect);
+
+    // value label
+    const t = document.createElementNS(svg.namespaceURI,"text");
+    t.setAttribute("x", x + barW/2); t.setAttribute("y", y - 8);
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("font-size","12");
+    t.setAttribute("fill","rgba(233,237,247,.92)");
+    t.textContent = brl(v);
+    svg.appendChild(t);
+
+    // x label
+    const l = document.createElementNS(svg.namespaceURI,"text");
+    l.setAttribute("x", x + barW/2); l.setAttribute("y", padT+innerH+28);
+    l.setAttribute("text-anchor","middle");
+    l.setAttribute("font-size","11");
+    l.setAttribute("fill","rgba(233,237,247,.70)");
+    const name = (r.vendedor||"").toString();
+    l.textContent = name.length>10 ? (name.slice(0,9)+"…") : name;
+    svg.appendChild(l);
+  });
+
+  el.appendChild(svg);
+}
+
+function renderLineChart(el, points, labels){
+  // points: [{xLabel, y}] in order
+  el.innerHTML = "";
+  const width = el.clientWidth || 1000;
+  const height = el.clientHeight || 240;
+  const padL = 70, padR = 20, padT = 18, padB = 42;
+  const innerW = Math.max(1, width - padL - padR);
+  const innerH = Math.max(1, height - padT - padB);
+
+  const maxY = Math.max(1, ...points.map(p => p.y || 0));
+  const minY = 0;
+
+  function xPos(i){
+    if(points.length <= 1) return padL + innerW/2;
+    return padL + (i/(points.length-1))*innerW;
+  }
+  function yPos(v){
+    const t = (v - minY) / (maxY - minY);
+    return padT + (1 - t) * innerH;
+  }
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  // baseline grid
+  const base = document.createElementNS(svg.namespaceURI,"line");
+  base.setAttribute("x1", padL);
+  base.setAttribute("x2", padL+innerW);
+  base.setAttribute("y1", padT+innerH);
+  base.setAttribute("y2", padT+innerH);
+  base.setAttribute("stroke", "rgba(255,255,255,.10)");
+  svg.appendChild(base);
+
+  // path
+  let d = "";
+  points.forEach((p,i)=>{
+    const x = xPos(i);
+    const y = yPos(p.y||0);
+    d += (i===0 ? "M":"L") + x + " " + y + " ";
+  });
+  const path = document.createElementNS(svg.namespaceURI,"path");
+  path.setAttribute("d", d.trim());
+  path.setAttribute("fill","none");
+  path.setAttribute("stroke","rgba(82,168,255,.95)");
+  path.setAttribute("stroke-width","4");
+  path.setAttribute("stroke-linecap","round");
+  path.setAttribute("stroke-linejoin","round");
+  svg.appendChild(path);
+
+  // points + labels
+  points.forEach((p,i)=>{
+    const x = xPos(i);
+    const y = yPos(p.y||0);
+
+    const dot = document.createElementNS(svg.namespaceURI,"circle");
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", 6);
+    dot.setAttribute("fill","rgba(82,168,255,.95)");
+    svg.appendChild(dot);
+
+    const val = document.createElementNS(svg.namespaceURI,"text");
+    val.setAttribute("x", x);
+    val.setAttribute("y", y - 18);
+    val.setAttribute("text-anchor","middle");
+    val.setAttribute("fill","rgba(233,237,247,.92)");
+    val.setAttribute("font-size","11");
+    val.setAttribute("font-weight","800");
+    val.textContent = brl(p.y||0);
+    svg.appendChild(val);
+
+    const lab = document.createElementNS(svg.namespaceURI,"text");
+    lab.setAttribute("x", x);
+    lab.setAttribute("y", padT + innerH + 28);
+    lab.setAttribute("text-anchor","middle");
+    lab.setAttribute("fill","rgba(233,237,247,.82)");
+    lab.setAttribute("font-size","14");
+    lab.setAttribute("font-weight","800");
+    lab.textContent = labels[i] || p.xLabel;
+    svg.appendChild(lab);
+  });
+
+  el.appendChild(svg);
+}
+
+function renderBarH(el, items, labelKey, valueKey, formatter){
+  el.innerHTML = "";
+  const width = el.clientWidth || 1000;
+  const height = el.clientHeight || 300;
+  const padL = 180, padR = 16, padT = 10, padB = 18;
+  const innerW = Math.max(1, width - padL - padR);
+  const innerH = Math.max(1, height - padT - padB);
+  const maxV = Math.max(1, ...items.map(i => i[valueKey] || 0));
+  const rowH = innerH / Math.max(1, items.length);
+  const barH = Math.max(12, rowH * 0.55);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  items.forEach((it, idx) => {
+    const y = padT + idx*rowH + (rowH - barH)/2;
+    const v = it[valueKey] || 0;
+    const w = (v / maxV) * innerW;
+
+    const label = document.createElementNS(svg.namespaceURI,"text");
+    label.setAttribute("x", 10);
+    label.setAttribute("y", y + barH*0.75);
+    label.setAttribute("fill","rgba(233,237,247,.92)");
+    label.setAttribute("font-size","12");
+    label.setAttribute("font-weight","800");
+    label.textContent = it[labelKey];
+    svg.appendChild(label);
+
+    const bg = document.createElementNS(svg.namespaceURI,"rect");
+    bg.setAttribute("x", padL);
+    bg.setAttribute("y", y);
+    bg.setAttribute("width", innerW);
+    bg.setAttribute("height", barH);
+    bg.setAttribute("rx", 8);
+    bg.setAttribute("fill","rgba(255,255,255,.06)");
+    svg.appendChild(bg);
+
+    const bar = document.createElementNS(svg.namespaceURI,"rect");
+    bar.setAttribute("x", padL);
+    bar.setAttribute("y", y);
+    bar.setAttribute("width", Math.max(2, w));
+    bar.setAttribute("height", barH);
+    bar.setAttribute("rx", 8);
+    bar.setAttribute("fill","rgba(82,168,255,.95)");
+    svg.appendChild(bar);
+
+    const val = document.createElementNS(svg.namespaceURI,"text");
+    val.setAttribute("x", padL + innerW);
+    val.setAttribute("y", y + barH*0.75);
+    val.setAttribute("text-anchor","end");
+    val.setAttribute("fill","rgba(233,237,247,.86)");
+    val.setAttribute("font-size","12");
+    val.setAttribute("font-weight","800");
+    val.textContent = formatter(v, it);
+    svg.appendChild(val);
+  });
+
+  el.appendChild(svg);
+}
+
+
+function mediaPorSemana(valor, semanas){
+  return semanas ? (valor / semanas) : 0;
+}
+function mediaPorDia(valor, dias){
+  return dias ? (valor / dias) : 0;
+}
+
+// ---------- Targets (Preço Alvo) ----------
+function loadTargets(){
+  try{
+    const raw = localStorage.getItem("priceTargets");
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const t = {};
+  (DATA.products||[]).forEach(p=> t[p] = null);
+  return t;
+}
+function saveTargets(t){
+  try{ localStorage.setItem("priceTargets", JSON.stringify(t)); }catch(e){}
+}
+
+// ---------- Render ----------
+let sortKey = "realizado";
+let cardsPageIndex = 0;
+let cardsTimer = null;
+function render(){
+  const state = getFilterState();
+  const weekTx = filterTx(state);
+  const monthTx = filterMonthTx(state);
+
+  // KPIs (REMOVIDO preço médio geral)
+  const realizedWeek = weekTx.reduce((a,r)=>a+(r.valor||0),0);
+  const kgWeek = weekTx.reduce((a,r)=>a+(r.kg||0),0);
+  const realizedMonth = monthTx.reduce((a,r)=>a+(r.valor||0),0);
+  const kgMonth = monthTx.reduce((a,r)=>a+(r.kg||0),0);
+
+  // meta mensal do time (sempre soma metas individuais; se filtro equipe, mantém meta total — você pode mudar depois)
+  const metasDoMes = getMetaMensalForState(state);
+  const metaMonthTeam = Object.values(metasDoMes||{}).reduce((a,v)=>a+(v||0),0);
+  const pctMeta = metaMonthTeam ? (realizedMonth/metaMonthTeam*100) : 0;
+  const falta = Math.max(0, metaMonthTeam - realizedMonth);
+
+  const kpis = [
+    { label:"Realizado (Semana)", value: brl(realizedWeek), mini:`Kg na semana: ${num(kgWeek,0)} kg`, span:"span-3" },
+    { label:"Realizado (Mês)", value: brl(realizedMonth), mini:`Kg no mês: ${num(kgMonth,0)} kg`, span:"span-3" },
+    { label:"Meta (Mês)", value: brl(metaMonthTeam), mini:`Falta: ${brl(falta)}`, span:"span-3" },
+    { label:"% Meta (Mês)", value: pct(pctMeta,1), mini:`Equipe: ${state.team}`, span:"span-3" },
+  ];
+  const kEl = document.getElementById("kpis");
+  kEl.innerHTML = "";
+  kpis.forEach(k=>{
+    const d = document.createElement("div");
+    d.className = `card ${k.span}`;
+    d.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div><div class="mini">${k.mini}</div>`;
+    kEl.appendChild(d);
+  });
+
+  // Week line chart (Seg-Sex) — Semana atual vs Semana anterior + destaque melhor dia
+  const days = ["segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira"];
+  const mapDay = new Map(days.map(d=>[d,0]));
+  weekTx.forEach(r=>{
+    if(mapDay.has(r.dia_semana)) mapDay.set(r.dia_semana, mapDay.get(r.dia_semana) + (Number(r.valor)||0));
+  });
+  const currentVals = days.map(d=> mapDay.get(d) || 0);
+
+  // Semana anterior (se existir na configuração do mês)
+  const ym = `${state.year}-${String(state.month).padStart(2,"0")}`;
+  const weeksList = (DATA?.config?.filters?.weeksByYearMonth && DATA.config.filters.weeksByYearMonth[ym]) ? DATA.config.filters.weeksByYearMonth[ym] : [];
+  const curW = Number(state.week);
+  const curIdx = weeksList.indexOf(curW);
+  const prevW = (curIdx > 0) ? weeksList[curIdx-1] : null;
+
+  const prevTx = prevW ? filterTx({team: state.team, year: state.year, month: state.month, week: prevW}) : [];
+  const mapPrev = new Map(days.map(d=>[d,0]));
+  prevTx.forEach(r=>{
+    if(mapPrev.has(r.dia_semana)) mapPrev.set(r.dia_semana, mapPrev.get(r.dia_semana) + (Number(r.valor)||0));
+  });
+  const prevVals = days.map(d=> mapPrev.get(d) || 0);
+
+  // KPIs do gráfico
+  const totAtual = currentVals.reduce((a,v)=>a+v,0);
+  const totPrev  = prevVals.reduce((a,v)=>a+v,0);
+  const bestIdx = currentVals.length ? currentVals.indexOf(Math.max(...currentVals)) : -1;
+
+  const elTA = document.getElementById("wkTotalAtual");
+  const elTP = document.getElementById("wkTotalPrev");
+  const elBD = document.getElementById("wkBestDay");
+  if(elTA) elTA.textContent = brl(totAtual);
+  if(elTP) elTP.textContent = prevW ? brl(totPrev) : "—";
+  if(elBD) elBD.textContent = (bestIdx>=0) ? days[bestIdx] : "—";
+
+  renderWeekChart(days, currentVals, prevVals, bestIdx, {prevWeek: prevW, curWeek: curW});
+// Progress bar
+  const prog = Math.max(0, Math.min(120, pctMeta || 0));
+  const barEl = document.getElementById("progBar");
+  barEl.style.width = prog + "%";
+
+  const metaHit = (metaMonthTeam || 0) > 0 && (realizedMonth || 0) >= (metaMonthTeam || 0);
+  // rótulo dentro da barra quando bater a meta
+  barEl.textContent = metaHit ? "META BATIDA ✅" : "";
+  // garante legibilidade e centralização do rótulo (sem afetar quando vazio)
+  barEl.style.display = "flex";
+  barEl.style.alignItems = "center";
+  barEl.style.justifyContent = "center";
+  barEl.style.fontWeight = "900";
+  barEl.style.fontSize = "12px";
+  barEl.style.color = metaHit ? "rgba(233,237,247,.95)" : "transparent";
+  barEl.style.textShadow = metaHit ? "0 2px 8px rgba(0,0,0,.45)" : "none";
+
+  document.getElementById("progText").innerHTML = `
+    <span class="pill">Realizado: ${brl(realizedMonth)}</span>
+    <span class="pill">Meta: ${brl(metaMonthTeam)}</span>
+    <span class="pill">% Meta: ${pct(pctMeta,1)}</span>
+    ${metaHit ? '<span class="badge ok">✅ Meta batida</span>' : ''}
+  `;
+
+
+  // Ranking (mensal — para metas)
+  const byVendor = {};
+  const buckets = {}; // por vendedor: semanas/dias (R$)
+  monthTx.forEach(r=>{
+    const v=r.vendedor || "—";
+    if(!byVendor[v]) byVendor[v] = {vendedor:v, realizado:0, kg:0, notas:new Set()};
+    byVendor[v].realizado += (r.valor||0);
+    byVendor[v].kg += (r.kg||0);
+    byVendor[v].notas.add(r.nota);
+
+    if(!buckets[v]) buckets[v] = {semanas:{}, dias:{}};
+    if(r.semana!=null){
+      buckets[v].semanas[r.semana] = (buckets[v].semanas[r.semana]||0) + (r.valor||0);
+    }
+    if(r.data!=null){
+      buckets[v].dias[r.data] = (buckets[v].dias[r.data]||0) + (r.valor||0);
+    }
+  });
+
+  const metas = getMetaMensalForState(state);
+
+  
+  function trendDaily(v){
+    const d = buckets[v]?.dias || {};
+    const keys = Object.keys(d).sort();
+    const vals = keys.map(k=>d[k]);
+    if(vals.length < 4) return {cls:"flat", txt:"—", alert:false, wowPct:0, fire:false};
+
+    const last2 = (vals[vals.length-1] + vals[vals.length-2]) / 2;
+    const prev2 = (vals[vals.length-3] + vals[vals.length-4]) / 2;
+
+    // Se não há base, não calcula tendência
+    if(prev2 <= 0) return {cls:"flat", txt:"—", alert:false, wowPct:0, fire:false};
+
+    const factor = last2 / prev2;          // ex.: 6.8 => 6,8x (alta) | 0.2 => 5,0x menor (queda)
+    const chg = (factor - 1) * 100;        // % equivalente
+
+    const down = chg < -10;
+    const up = chg > 10;
+
+    const fmtX = (x) => `${x.toFixed(1).replace(".",",")}x`;
+
+    let txt = `${chg.toFixed(0)}%`;
+
+    if(down){
+      // Queda forte: exibir "x vezes menor" quando for intuitivo (<= 0,5x = -50% ou pior)
+      if(last2 > 0 && factor <= 0.5){
+        const downFactor = prev2 / last2; // ex.: 5 => 5,0x menor
+        txt = `⬇ ${fmtX(downFactor)}`;
+      } else {
+        txt = `⬇ ${Math.abs(chg).toFixed(0)}%`;
+      }
+    } else if(up){
+      // Alta forte: exibir "x vezes" quando >= 2x
+      txt = (factor >= 2) ? `⬆ ${fmtX(factor)}` : `⬆ ${chg.toFixed(0)}%`;
+    } else {
+      // Neutro (sem seta). Se ainda assim for >= 2x, mantém em x
+      txt = (factor >= 2) ? fmtX(factor) : `${chg.toFixed(0)}%`;
+    }
+
+    return {
+      cls: down ? "down" : (up ? "up" : "flat"),
+      txt,
+      alert: down,
+      wowPct: chg,
+      fire: up
+    };
+  }
+
+
+  function wowWeekly(v){
+    const w = buckets[v]?.semanas || {};
+    const keys = Object.keys(w).map(x=>Number(x)).filter(x=>isFinite(x)).sort((a,b)=>a-b);
+    if(keys.length < 2) return {wowPct:0, fire:false};
+    const prev = w[keys[keys.length-2]] || 0;
+    const last = w[keys[keys.length-1]] || 0;
+    if(prev<=0) return {wowPct:0, fire:false};
+    const pct = ((last - prev) / prev) * 100;
+    return {wowPct:pct, fire:pct>10};
+  }
+
+  let ranked = Object.values(byVendor).map(o=>{
+    const meta = metas[o.vendedor] || 0;
+    const pctM = meta ? (o.realizado/meta*100) : 0;
+
+    const semanasV = Object.keys(buckets[o.vendedor]?.semanas || {}).length || 0;
+    const diasV = Object.keys(buckets[o.vendedor]?.dias || {}).length || 0;
+    const mediaSem = semanasV ? (o.realizado / semanasV) : 0;
+    const mediaDia = diasV ? (o.realizado / diasV) : 0;
+
+    const t = trendDaily(o.vendedor);
+    const ww = wowWeekly(o.vendedor);
+
+    return {
+      vendedor:o.vendedor,
+      realizado:o.realizado,
+      kg:o.kg,
+      meta,
+      pctMeta:pctM,
+      mediaSem,
+      mediaDia,
+      trendHtml:`<span class="trend ${t.cls}">${t.txt}</span>`,
+      alertRow:t.alert,
+      wowPct: ww.wowPct,
+      fire: ww.fire
+    };
+  });
+
+  // ordenação do ranking conforme toggle
+  ranked.sort((a,b)=> (b[sortKey]||0) - (a[sortKey]||0));
+  // Render Top 3 + gráfico + tabela completa
+  
+  
+  const top3El = document.getElementById("top3");
+  const pageInfo = document.getElementById("rankPageInfo");
+  const PER_PAGE = 6;
+
+  const totalPages = Math.max(1, Math.ceil(ranked.length / PER_PAGE));
+  if(cardsPageIndex >= totalPages) cardsPageIndex = 0;
+
+  if(pageInfo){
+    pageInfo.textContent = `Página ${cardsPageIndex+1}/${totalPages}`;
+  }
+
+  if(top3El){
+    top3El.innerHTML = "";
+    const start = cardsPageIndex * PER_PAGE;
+    const page = ranked.slice(start, start + PER_PAGE);
+
+    page.forEach((r,i)=>{
+      const pos = start + i + 1;
+      const c = document.createElement("div");
+      c.className = "card span-4";
+      c.innerHTML = `
+        <div class="label">#${pos} • ${r.vendedor}${r.fire ? `<span class="badgefire">🔥 +${r.wowPct.toFixed(0)}%</span>` : ``}${r.pctMeta>=100 ? `<span class="meta-batida">META BATIDA ✅</span>` : ``}</div>
+        <div class="value">${brl(r.realizado)}</div>
+        <div class="mini">Meta: ${brl(r.meta)} • <span class="badgecell ${statusClassPct(r.pctMeta)}">${pct(r.pctMeta,1)}</span> • ${r.trendHtml}</div>
+        <div class="mini">Média/sem: <strong>${brl(r.mediaSem)}</strong> • Média/dia: <strong>${brl(r.mediaDia)}</strong></div>
+        <div class="mini">Kg: ${num(r.kg,0)}</div>
+      `;
+      top3El.appendChild(c);
+    });
+  }
+
+  // auto-rotacionar cards (respeita Auto ON/OFF)
+  if(cardsTimer){ clearInterval(cardsTimer); cardsTimer = null; }
+  if(window.__AUTO__){
+    cardsTimer = setInterval(()=>{
+      cardsPageIndex = (cardsPageIndex + 1) % totalPages;
+      render();
+    }, 9000);
+  }
+
+  const chartEl = document.getElementById("rankChart");
+  if(chartEl){
+    renderBarChartSimple(chartEl, ranked, sortKey, 10);
+  }
+
+  const tbody = document.getElementById("rankRows");
+  if(tbody){
+    tbody.innerHTML = "";
+    ranked.forEach((r,idx)=>{
+      const tr = document.createElement("tr");
+      if(r.alertRow) tr.classList.add("row-alert");
+      tr.innerHTML = `
+        <td>${idx+1}</td>
+        <td>${r.vendedor}${r.fire ? `<span class="badgefire">🔥 +${r.wowPct.toFixed(0)}%</span>` : ``}</td>
+        <td class="right">${brl(r.realizado)}</td>
+        <td class="right">${brl(r.meta)}</td>
+        <td class="right"><span class="badgecell ${statusClassPct(r.pctMeta)}">${pct(r.pctMeta,1)}</span></td>
+        <td class="right">${r.trendHtml}</td>
+        <td class="right">${num(r.kg,0)}</td>
+        <td class="right">${brl(r.mediaSem)}</td>
+        <td class="right">${brl(r.mediaDia)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+
+// Resumo por vendedor: ticket médio e peso vendido por produto (mês)
+  const produtosChave = ["Cobre","Barra","Alumínio"];
+  const alvos = loadPriceTargets();
+
+  // Normaliza nomes de produto (mapeia prefixos comuns)
+  function normProd(p){
+    const t = (p||"").toLowerCase();
+    if(t.includes("cobre")) return "Cobre";
+    if(t.includes("barra")) return "Barra";
+    if(t.includes("alum")) return "Alumínio";
+    return null;
+  }
+
+  const metasDoMesMix = getMetaMensalForState(state);
+  const vendedorSet = new Set(Object.keys(metasDoMesMix||{}));
+  monthTx.forEach(r => vendedorSet.add(r.vendedor || "—"));
+
+  const resumo = {};
+  Array.from(vendedorSet).forEach(v=>{
+    resumo[v] = {
+      vendedor: v,
+      meta: (metasDoMesMix||{})[v] || 0,
+      realizado: 0,
+      prod: {
+        "Cobre": {fat:0, kg:0, notas:new Set()},
+        "Barra": {fat:0, kg:0, notas:new Set()},
+        "Alumínio": {fat:0, kg:0, notas:new Set()},
+      }
+    };
+  });
+
+  monthTx.forEach(r=>{
+    const v = r.vendedor || "—";
+    const p = normProd(r.produto);
+    const obj = resumo[v] || (resumo[v] = {vendedor:v, meta:0, realizado:0, prod:{
+      "Cobre": {fat:0, kg:0, notas:new Set()},
+      "Barra": {fat:0, kg:0, notas:new Set()},
+      "Alumínio": {fat:0, kg:0, notas:new Set()},
+    }});
+    const val = (r.valor||0);
+    const kg = correctedKg(r.nota, r.produto, (r.kg||0));
+    obj.realizado += val;
+    if(p){
+      obj.prod[p].fat += val;
+      obj.prod[p].kg  += kg;
+      obj.prod[p].notas.add(r.nota);
+    }
+  });
+
+  // ordem: metas primeiro, depois extras
+  const order = Object.keys(metasDoMesMix||{});
+  const extras = Object.keys(resumo).filter(v => !order.includes(v));
+  const orderedVendedores = [...order, ...extras];
+
+  // total
+  const total = {
+    meta: Object.values(metasDoMesMix||{}).reduce((a,v)=>a+(v||0),0),
+    realizado: 0,
+    prod: {
+      "Cobre": {fat:0, kg:0, notas:new Set()},
+      "Barra": {fat:0, kg:0, notas:new Set()},
+      "Alumínio": {fat:0, kg:0, notas:new Set()},
+    }
+  };
+
+  const tbodyMix = document.getElementById("sellerMixRows");
+  tbodyMix.innerHTML = "";
+
+  function precoMed(obj, p){
+    const kg = obj.prod[p].kg || 0;
+    return kg ? (obj.prod[p].fat / kg) : 0;
+  }
+
+  orderedVendedores.forEach(v=>{
+    const r = resumo[v];
+    if(!r) return;
+
+    total.realizado += (r.realizado||0);
+    produtosChave.forEach(p=>{
+      total.prod[p].fat += r.prod[p].fat;
+      total.prod[p].kg  += r.prod[p].kg;
+      r.prod[p].notas.forEach(n=> total.prod[p].notas.add(n));
+    });
+
+    const aCumprirNum = (r.meta||0) - (r.realizado||0);
+    const metaBatida = (r.meta||0) > 0 && (r.realizado||0) >= (r.meta||0);
+    const aCumprirHtml = metaBatida ? '<span class="meta-batida">Meta batida</span>' : brl(Math.max(0, aCumprirNum));
+    const pctAting = (r.meta||0) ? ((r.realizado||0)/(r.meta||0)*100) : 0;
+
+    const tr = document.createElement("tr");
+    if(r.alertRow) tr.classList.add("row-alert");
+    tr.innerHTML = `
+      <td><strong>${r.vendedor}</strong></td>
+      <td class="right">${brl(r.meta||0)}</td>
+      <td class="right">${brl(r.realizado||0)}</td>
+      <td class="right">${aCumprirHtml}</td>
+      <td class="right"><span class="badgecell ${statusClassPct(pctAting)}">${pct(pctAting,1)}</span></td>
+      <td class="right ${ (alvos["Cobre"]!=null && precoMed(r,"Cobre") < alvos["Cobre"]) ? "cell-target-bad" : (alvos["Cobre"]!=null ? "cell-target-ok" : "") }">${brl(precoMed(r,"Cobre"))}</td>
+      <td class="right ${ (alvos["Barra"]!=null && precoMed(r,"Barra") < alvos["Barra"]) ? "cell-target-bad" : (alvos["Barra"]!=null ? "cell-target-ok" : "") }">${brl(precoMed(r,"Barra"))}</td>
+      <td class="right ${ (alvos["Alumínio"]!=null && precoMed(r,"Alumínio") < alvos["Alumínio"]) ? "cell-target-bad" : (alvos["Alumínio"]!=null ? "cell-target-ok" : "") }">${brl(precoMed(r,"Alumínio"))}</td>
+      <td class="right">${num(r.prod["Cobre"].kg||0,0)}</td>
+      <td class="right">${num(r.prod["Barra"].kg||0,0)}</td>
+      <td class="right">${num(r.prod["Alumínio"].kg||0,0)}</td>
+    `;
+    tbodyMix.appendChild(tr);
+  });
+
+  try{ if(typeof window.renderEvolutionScreen === 'function') window.renderEvolutionScreen(); }catch(e){}
+
+  const totalACumprirNum = (total.meta||0) - (total.realizado||0);
+  const totalMetaBatida = (total.meta||0) > 0 && (total.realizado||0) >= (total.meta||0);
+  const totalACumprirHtml = totalMetaBatida ? '<span class="meta-batida">Meta batida</span>' : brl(Math.max(0, totalACumprirNum));
+  const totalPct = (total.meta||0) ? ((total.realizado||0)/(total.meta||0)*100) : 0;
+
+  function totalPreco(p){
+    const kg = total.prod[p].kg || 0;
+    return kg ? (total.prod[p].fat / kg) : 0;
+  }
+
+  const trTot = document.createElement("tr");
+  trTot.innerHTML = `
+    <td><strong>Geral Equipe</strong></td>
+    <td class="right"><strong>${brl(total.meta||0)}</strong></td>
+    <td class="right"><strong>${brl(total.realizado||0)}</strong></td>
+    <td class="right"><strong>${totalACumprirHtml}</strong></td>
+    <td class="right"><span class="badgecell ${statusClassPct(totalPct)}"><strong>${pct(totalPct,1)}</strong></span></td>
+    <td class="right ${ (alvos["Cobre"]!=null && totalPreco("Cobre") < alvos["Cobre"]) ? "cell-target-bad" : (alvos["Cobre"]!=null ? "cell-target-ok" : "") }"><strong>${brl(totalPreco("Cobre"))}</strong></td>
+    <td class="right ${ (alvos["Barra"]!=null && totalPreco("Barra") < alvos["Barra"]) ? "cell-target-bad" : (alvos["Barra"]!=null ? "cell-target-ok" : "") }"><strong>${brl(totalPreco("Barra"))}</strong></td>
+    <td class="right ${ (alvos["Alumínio"]!=null && totalPreco("Alumínio") < alvos["Alumínio"]) ? "cell-target-bad" : (alvos["Alumínio"]!=null ? "cell-target-ok" : "") }"><strong>${brl(totalPreco("Alumínio"))}</strong></td>
+    <td class="right"><strong>${num(total.prod["Cobre"].kg||0,0)}</strong></td>
+    <td class="right"><strong>${num(total.prod["Barra"].kg||0,0)}</strong></td>
+    <td class="right"><strong>${num(total.prod["Alumínio"].kg||0,0)}</strong></td>
+  `;
+  tbodyMix.appendChild(trTot);
+
+  document.getElementById("foot").textContent =
+    ``;
+}
+
+
+// ===== Gráfico: Faturamento na Semana (Tela 1) =====
+let __weekChart = null;
+let __weekChartLast = null;
+
+// Interpola duas cores (hex) por t [0..1]
+function _lerpColorHex(a,b,t){
+  function h2i(h){ return parseInt(h,16); }
+  const ar=h2i(a.slice(1,3)), ag=h2i(a.slice(3,5)), ab=h2i(a.slice(5,7));
+  const br=h2i(b.slice(1,3)), bg=h2i(b.slice(3,5)), bb=h2i(b.slice(5,7));
+  const rr=Math.round(ar+(br-ar)*t), rg=Math.round(ag+(bg-ag)*t), rb=Math.round(ab+(bb-ab)*t);
+  return `rgb(${rr},${rg},${rb})`;
+}
+
+function renderWeekChart(labels, currentVals, prevVals, bestIdx, meta){
+  const canvas = document.getElementById('weekChart');
+  if(!canvas) return;
+
+  __weekChartLast = {labels, currentVals, prevVals, bestIdx, meta};
+  try{ window.__weekChartLast = __weekChartLast; }catch(e){}
+
+  const isDark = document.body.classList.contains('theme-dark');
+  const gridColor = isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)';
+  const tickColor = isDark ? 'rgba(233,237,247,.92)' : 'rgba(31,41,55,.92)';
+
+  const maxV = Math.max(1, ...currentVals, ...(prevVals||[]));
+  const pointRadius = labels.map((_,i)=> i===bestIdx ? 7 : 4);
+
+  // cores: azul (baixo) -> vermelho (alto), por ponto (performance)
+  const low = '#3b82f6';   // blue-500
+  const high= '#ef4444';   // red-500
+  const pointColors = labels.map((_,i)=> _lerpColorHex(low, high, Math.max(0, Math.min(1, (currentVals[i]||0)/maxV ))));
+
+  // melhor dia: realce em verde
+  if(bestIdx>=0){
+    pointColors[bestIdx] = isDark ? 'rgb(34,197,94)' : 'rgb(22,163,74)';
+  }
+
+  // destrói para evitar leaks quando troca filtros
+  if(__weekChart){ try{ __weekChart.destroy(); }catch(e){} __weekChart=null; }
+
+  const ctx = canvas.getContext('2d');
+
+  __weekChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        // Semana anterior (comparação) — linha pontilhada
+        {
+          label: (meta && meta.prevWeek) ? `Semana anterior (${meta.prevWeek})` : 'Semana anterior',
+          data: prevVals || labels.map(()=>0),
+          borderColor: isDark ? 'rgba(233,237,247,.35)' : 'rgba(31,41,55,.35)',
+          backgroundColor: 'transparent',
+          borderDash: [6,6],
+          pointRadius: 0,
+          tension: 0.35,
+        },
+        // Semana atual
+        {
+          label: (meta && meta.curWeek) ? `Semana atual (${meta.curWeek})` : 'Semana atual',
+          data: currentVals,
+          borderColor: isDark ? 'rgba(239,68,68,.85)' : 'rgba(239,68,68,.90)',
+          backgroundColor: isDark ? 'rgba(239,68,68,.10)' : 'rgba(239,68,68,.12)',
+          pointRadius,
+          pointHoverRadius: 8,
+          pointBackgroundColor: pointColors,
+          pointBorderWidth: 0,
+          fill: true,
+          tension: 0.35,
+          segment: {
+            borderColor: (ctx)=>{
+              const i = ctx.p0DataIndex;
+              const v0 = currentVals[i] || 0;
+              const t = Math.max(0, Math.min(1, v0/maxV));
+              return _lerpColorHex(low, high, t);
+            }
+          }
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 650, easing: 'easeOutQuart' },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: tickColor, boxWidth: 14, usePointStyle: true, pointStyle:'line' }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx)=>{
+              const v = Number(ctx.raw)||0;
+              return ` ${ctx.dataset.label}: ${v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`;
+            }
+          }
+        },
+        datalabels: {
+          display: (ctx)=> ctx.datasetIndex===1, // só na semana atual
+          align: 'top',
+          anchor: 'end',
+          offset: 6,
+          color: tickColor,
+          font: { weight: '800' },
+          formatter: (v)=> {
+            const n = Number(v)||0;
+            if(!n) return '';
+            return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display:false },
+          ticks: { color: tickColor }
+        },
+        y: {
+          grid: { color: gridColor },
+          ticks: {
+            display:false,
+            color: tickColor,
+            callback: (value)=> Number(value||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0})
+          }
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+
+// ---------- Auto rotate ----------
+function setAuto(on){
+  // Auto = auto-rotativo do CARROSSEL (não altera período)
+  autoOn = !!on;
+  document.getElementById("autoBtn").textContent = autoOn ? "ON" : "OFF";
+  try{ localStorage.setItem('painelAuto', autoOn ? '1' : '0'); }catch(e){}
+
+  if(autoTimer){
+    clearInterval(autoTimer);
+    autoTimer = null;
+  }
+
+  if(autoOn){
+    // 12 segundos por tela
+    autoTimer = setInterval(()=>{
+      // Preferir API exposta do carrossel; fallback para clique no botão
+      if(window.__carouselNext){
+        window.__carouselNext();
+      }else{
+        const btn = document.getElementById('slideNext');
+        if(btn) btn.click();
+      }
+    }, 12000);
+  }
+}
+
+
+// ---------- Fullscreen ----------
+function toggleFullscreen(){
+  const el = document.documentElement;
+  if(!document.fullscreenElement){
+    el.requestFullscreen && el.requestFullscreen();
+  }else{
+    document.exitFullscreen && document.exitFullscreen();
+  }
+}
+
+// ---------- Init ----------
+function init(){
+  populateYear();
+  const d = DATA.config.filters.default;
+  document.getElementById("teamSel").value = d.team;
+
+  const ySel = document.getElementById("yearSel");
+  ySel.value = String(d.year);
+
+  populateMonth(d.year);
+  const mSel = document.getElementById("monthSel");
+  mSel.value = String(d.month);
+
+  populateWeek(d.year, d.month);
+  const wSel = document.getElementById("weekSel");
+  wSel.value = String(d.week);
+
+  ySel.addEventListener("change", ()=>{
+    populateMonth(Number(ySel.value));
+    populateWeek(Number(ySel.value), Number(mSel.value));
+    if(wSel.options.length) wSel.value = wSel.options[0].value;
+    render();
+  });
+  mSel.addEventListener("change", ()=>{
+    populateWeek(Number(ySel.value), Number(mSel.value));
+    if(wSel.options.length) wSel.value = wSel.options[0].value;
+    render();
+  });
+  wSel.addEventListener("change", render);
+  document.getElementById("teamSel").addEventListener("change", render);
+
+  document.getElementById("fsBtn").addEventListener("click", toggleFullscreen);
+
+  const autoBtn = document.getElementById("autoBtn");
+  autoBtn.addEventListener("click", ()=> setAuto(!autoOn));
+
+  window.addEventListener("resize", ()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(render, 120); });
+
+  
+  // alvos de preço (inputs)
+  const alvos0 = loadPriceTargets();
+  const inC = document.getElementById("alvoCobre");
+  const inB = document.getElementById("alvoBarra");
+  const inA = document.getElementById("alvoAluminio");
+  if(inC) inC.value = (alvos0["Cobre"]!=null) ? alvos0["Cobre"] : "";
+  if(inB) inB.value = (alvos0["Barra"]!=null) ? alvos0["Barra"] : "";
+  if(inA) inA.value = (alvos0["Alumínio"]!=null) ? alvos0["Alumínio"] : "";
+
+  const btnSave = document.getElementById("salvarAlvos");
+  if(btnSave){
+    btnSave.addEventListener("click", ()=>{
+      const t = {
+        "Cobre": inC && inC.value!=="" ? Number(inC.value) : null,
+        "Barra": inB && inB.value!=="" ? Number(inB.value) : null,
+        "Alumínio": inA && inA.value!=="" ? Number(inA.value) : null
+      };
+      savePriceTargets(t);
+      render();
+    });
+  }
+
+setAuto(true);
+
+  // ranking: alternar critério de ordenação
+  document.querySelectorAll(".tbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tbtn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      sortKey = btn.dataset.sort || "realizado";
+      cardsPageIndex = 0;
+      render();
+    });
+  });
+
+
+  // pager do ranking (cards)
+  const prev = document.getElementById("rankPrev");
+  const next = document.getElementById("rankNext");
+  if(prev) prev.addEventListener("click", ()=>{
+    cardsPageIndex = Math.max(0, cardsPageIndex - 1);
+    render();
+  });
+  if(next) next.addEventListener("click", ()=>{
+    cardsPageIndex = cardsPageIndex + 1;
+    render();
+  });
+
+  render();
+}
+carregarDadosPainel();
+
+// ===== Tela 1: Ritmo necessário + Alerta (usa DATA.tx / filtros) =====
+
+// --- Dias úteis (São Paulo - Capital): fins de semana + feriados nacionais/estaduais/municipais (principais) ---
+function _pad2(n){ return String(n).padStart(2,"0"); }
+function _ymd(d){ return `${d.getFullYear()}-${_pad2(d.getMonth()+1)}-${_pad2(d.getDate())}`; }
+function _easterDate(y){
+  // Algoritmo de Meeus/Jones/Butcher (Greg.) — retorna Date local
+  const a = y % 19;
+  const b = Math.floor(y/100);
+  const c = y % 100;
+  const d = Math.floor(b/4);
+  const e = b % 4;
+  const f = Math.floor((b+8)/25);
+  const g = Math.floor((b-f+1)/3);
+  const h = (19*a + b - d - g + 15) % 30;
+  const i = Math.floor(c/4);
+  const k = c % 4;
+  const l = (32 + 2*e + 2*i - h - k) % 7;
+  const m = Math.floor((a + 11*h + 22*l)/451);
+  const month = Math.floor((h + l - 7*m + 114)/31) - 1; // 0-based
+  const day = ((h + l - 7*m + 114) % 31) + 1;
+  return new Date(y, month, day);
+}
+function _addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function _holidaySetSP(y){
+  const set = new Set();
+  // Fixos (nacionais)
+  [
+    [1,1],   // Confraternização Universal
+    [4,21],  // Tiradentes
+    [5,1],   // Dia do Trabalho
+    [9,7],   // Independência
+    [10,12], // N. Sra. Aparecida
+    [11,2],  // Finados
+    [11,15], // Proclamação da República
+    [12,25], // Natal
+  ].forEach(([m,d])=> set.add(`${y}-${_pad2(m)}-${_pad2(d)}`));
+
+  // São Paulo (Capital/Estado)
+  set.add(`${y}-01-25`); // Aniversário de SP (municipal)
+  set.add(`${y}-07-09`); // Revolução Constitucionalista (estadual - SP)
+  set.add(`${y}-11-20`); // Consciência Negra (estadual - SP)
+  if(y===2026) set.add(`2026-04-20`); // Emenda interna da empresa (não considerar como dia útil)
+
+  // Móveis (base Páscoa)
+  const easter = _easterDate(y);
+  const carnavalSeg = _addDays(easter, -48);
+  const carnavalTer = _addDays(easter, -47);
+  const sextaSanta  = _addDays(easter, -2);
+  const corpusChristi = _addDays(easter, 60);
+
+  [carnavalSeg, carnavalTer, sextaSanta, corpusChristi].forEach(d => set.add(_ymd(d)));
+  return set;
+}
+function _isBusinessDaySP(d, holidaySet){
+  const dow = d.getDay(); // 0 dom .. 6 sáb
+  if(dow===0 || dow===6) return false;
+  return !holidaySet.has(_ymd(d));
+}
+
+function _nextBusinessDaySP(dateObj, year, month){
+  // retorna o próximo dia útil (sempre depois da data informada)
+  // OBS: não limita ao mês; se virar o mês (ex.: fechamento), continua até achar um dia útil.
+  let y = year;
+  let hol = _holidaySetSP(y);
+  const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+  d.setDate(d.getDate()+1);
+  while(true){
+    if(d.getFullYear() !== y){
+      y = d.getFullYear();
+      hol = _holidaySetSP(y);
+    }
+    if(_isBusinessDaySP(d, hol)) break;
+    d.setDate(d.getDate()+1);
+  }
+  return d;
+}
+function _businessDaysInMonthSP(year, month){
+  const hol = _holidaySetSP(year);
+  const lastDay = new Date(year, month, 0).getDate();
+  let count = 0;
+  for(let day=1; day<=lastDay; day++){
+    const d = new Date(year, month-1, day);
+    if(_isBusinessDaySP(d, hol)) count++;
+  }
+  return count;
+}
+
+function _businessDaysElapsedSP(toDateInclusive, year, month){
+  // conta dias úteis do dia 1 até toDateInclusive (inclui o dia se for útil)
+  const hol = _holidaySetSP(year);
+  const last = toDateInclusive.getDate();
+  let count = 0;
+  for(let day=1; day<=last; day++){
+    const d = new Date(year, month-1, day);
+    if(_isBusinessDaySP(d, hol)) count++;
+  }
+  return count;
+}
+
+function _businessDaysRemainingSP(fromDateInclusive, year, month){
+  // conta dias úteis a partir de fromDateInclusive (inclui o dia se for útil); se não for útil, pula para o próximo útil
+  const last = new Date(year, month, 0).getDate();
+  const hol = _holidaySetSP(year);
+
+  let startDay = fromDateInclusive.getDate();
+  // ajusta para o próximo dia útil, se necessário
+  while(startDay <= last){
+    const d0 = new Date(year, month-1, startDay);
+    if(_isBusinessDaySP(d0, hol)) break;
+    startDay++;
+  }
+
+  let count = 0;
+  for(let day = startDay; day<=last; day++){
+    const d = new Date(year, month-1, day);
+    if(_isBusinessDaySP(d, hol)) count++;
+  }
+  return count;
+}
+
+function renderRitmo(){
+  const elDias = document.getElementById("rtDias");
+  const elFat  = document.getElementById("rtFatDia");
+  const elKg   = document.getElementById("rtKgDia");
+  const elAl   = document.getElementById("rtAlert");
+  if(!elDias || !elFat || !elKg || !elAl) return;
+
+  const st = getFilterState();
+
+  // Histórico (anos anteriores): sem Ritmo/Projeção
+  const rw = document.getElementById('ritmoWrap');
+  if(Number(st.year)!==2026){
+    if(rw) rw.style.display = 'none';
+    return;
+  }else{
+    // Mostrar apenas na Tela 1 (slide ativo = 0), sem depender de variável idx (escopo do carrossel)
+    const active = document.querySelector('.carouselSlide.active');
+    const isTela1 = active ? (String(active.getAttribute('data-idx')) === '0') : true;
+    if(rw) rw.style.display = isTela1 ? 'block' : 'none';
+  }
+
+
+  const y = Number(st.year);
+  const mo = Number(st.month);
+  const diasNoMes = new Date(y, mo, 0).getDate();
+  const hoje = new Date();
+  const ehMesAtual = (y===hoje.getFullYear() && mo===hoje.getMonth()+1);
+
+  // Transações do mês filtrado (para definir a data de atualização)
+  const baseMonthTx = filterTx({team: st.team, year: y, month: mo, week: null});
+
+  // Referência para ritmo/dias úteis:
+  // - se houver vendas no mês filtrado, usa a ÚLTIMA data da base (data de atualização)
+  // - e começa a contar a partir do PRÓXIMO dia útil (não conta o dia da atualização)
+  // - se não houver vendas, usa hoje (mês atual) ou meio do mês (mês histórico)
+  let refDate;
+  if(baseMonthTx.length){
+    const maxDateStr = baseMonthTx.reduce((m,r)=> (String(r.data) > String(m) ? r.data : m), baseMonthTx[0].data);
+    const parts = String(maxDateStr).split("-");
+    refDate = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+    refDate = _nextBusinessDaySP(refDate, y, mo);
+  }else{
+    const refDay = ehMesAtual ? hoje.getDate() : Math.ceil(diasNoMes/2);
+    refDate = new Date(y, mo-1, refDay);
+    if(ehMesAtual) refDate = _nextBusinessDaySP(refDate, y, mo);
+  }
+
+  // Se a referência "pulou" para o mês seguinte, então o mês filtrado já está fechado.
+  // Nesse caso, Ritmo/Projeção passam a considerar o próximo mês (ex.: Jan fechado -> calcula Fev).
+  let ry = y;
+  let rmo = mo;
+  if(refDate.getFullYear() !== y || (refDate.getMonth()+1) !== mo){
+    ry = refDate.getFullYear();
+    rmo = refDate.getMonth()+1;
+  }
+
+  // Transações do mês do ritmo (pode ser o mês seguinte quando o mês filtrado está fechado)
+  const monthTx = filterTx({team: st.team, year: ry, month: rmo, week: null});
+
+  // Dias úteis (SP capital): restantes incluem o dia de referência se for útil
+  const diasRestantes = _businessDaysRemainingSP(refDate, ry, rmo);
+  const diasPassados = Math.max(1, _businessDaysElapsedSP(new Date(ry, rmo-1, Math.max(1, refDate.getDate()-1)), ry, rmo));
+  const realizadoMes = monthTx.reduce((a,r)=>a+(Number(r.valor)||0),0);
+  const kgMes = monthTx.reduce((a,r)=>a+(Number(r.kg)||0),0);
+
+  const metaMes = Object.values(getMetaMensalForState({year: ry, month: rmo})||{}).reduce((a,v)=>a+(Number(v)||0),0);
+  const falta = Math.max(0, metaMes - realizadoMes);
+
+  const precoMedio = kgMes>0 ? (realizadoMes/kgMes) : 0;
+  const faltaKg = (precoMedio>0) ? (falta/precoMedio) : 0;
+
+  const ritmoNecFat = (diasRestantes>0) ? (falta/diasRestantes) : 0;
+  const ritmoNecKg  = (diasRestantes>0) ? (faltaKg/diasRestantes) : 0;
+  const ritmoAtualFat = (diasPassados>0) ? (realizadoMes/diasPassados) : 0;
+
+  elDias.textContent = diasRestantes.toLocaleString("pt-BR");
+  elFat.textContent  = ritmoNecFat.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  elKg.textContent   = Math.round(ritmoNecKg).toLocaleString("pt-BR") + " kg";
+
+  // ===== Semáforo + Projeção (Tela 1) =====
+  const ratio = (ritmoNecFat>0) ? (ritmoAtualFat/ritmoNecFat) : 0;
+  const ok = ratio >= 1;
+  const warn = (!ok) && (ratio >= 0.90); // até 10% abaixo do necessário
+  const dotCls = ok ? "ok" : (warn ? "warn" : "bad");
+  const badge = ok ? "🟢" : (warn ? "🟡" : "🔴");
+  const statusTxt = ok ? "Ritmo atual suficiente" : (warn ? "Ritmo perto do necessário" : "Ritmo atual abaixo do necessário");
+
+  // Projeção de fechamento do mês (mantendo o ritmo atual) — usa o mês do ritmo
+  const totalBiz = (typeof _businessDaysInMonthSP === "function") ? _businessDaysInMonthSP(ry, rmo) : (diasPassados + diasRestantes);
+  const projFech = ritmoAtualFat * totalBiz;
+  const projPct  = (metaMes>0) ? (projFech/metaMes) : 0;
+
+  const fmtBRL = (v)=> v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const fmtPct = (v)=> (v*100).toFixed(1) + "%";
+
+  elAl.classList.remove("ok","warn","bad");
+  elAl.classList.add(dotCls);
+
+  // Card de status (sem projeção aqui)
+  elAl.innerHTML = `
+    <div class="rtWrap">
+      <span class="rtDot ${dotCls}"></span>
+      <div class="rtText">
+        <div class="rtTitle">${badge} ${statusTxt}</div>
+      </div>
+    </div>
+  `;
+
+  // Card separado de projeção
+  const elProj = document.getElementById("rtProj");
+  const elProjPct = document.getElementById("rtProjPct");
+  const elProjWrap = document.getElementById("projWrap");
+  if(elProj) elProj.textContent = fmtBRL(projFech);
+  if(elProjPct) elProjPct.textContent = fmtPct(projPct);
+
+  if(elProjWrap){
+    elProjWrap.classList.remove("ok","warn","bad");
+    // usa a projeção vs meta como semáforo
+    const projCls = (projFech>=metaMes) ? "ok" : ((projFech>=metaMes*0.9) ? "warn" : "bad");
+    elProjWrap.classList.add(projCls);
+  }
+}
+
+// injeta no render principal, sem alterar o resto
+(function(){
+  if(typeof render === "function" && !window.__RITMO_PATCH__){
+    window.__RITMO_PATCH__ = true;
+    const _old = render;
+    render = function(){
+      _old();
+      try{ renderRitmo(); }catch(e){}
+    };
+    try{ renderRitmo(); }catch(e){}
+  }
+})();
+
+
+// Ritmo: garante estado inicial ao carregar
+document.addEventListener('DOMContentLoaded', ()=>{
+  const rw=document.getElementById('ritmoWrap');
+  if(rw) rw.style.display = (typeof idx!=='undefined' && idx===0) ? 'block' : 'none';
+  try{ renderRitmo(); }catch(e){}
+});
+
+</script>
+
+<script>
+(function(){
+  const KEY = 'painelTheme';
+  function apply(theme){
+    document.body.classList.remove('theme-light','theme-dark');
+    document.body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+  }
+  window.toggleTheme = function(){
+    const isDark = document.body.classList.contains('theme-dark');
+    const next = isDark ? 'light' : 'dark';
+    apply(next);
+    localStorage.setItem(KEY, next);
+    const btn = document.getElementById('themeBtn');
+    if(btn) btn.innerHTML = next === 'dark' ? '☀️ Tema' : '🌙 Tema';
+  
+    try{ if(typeof render==='function') render(); }catch(e){}
+    try{ if(window.__weekChartLast) renderWeekChart(window.__weekChartLast.labels, window.__weekChartLast.currentVals, window.__weekChartLast.prevVals, window.__weekChartLast.bestIdx, window.__weekChartLast.meta); }catch(e){}
+  }
+  window.addEventListener('load', () => {
+    const saved = localStorage.getItem(KEY) || 'dark'; // padrão: escuro (como painel original)
+    apply(saved);
+    const btn = document.getElementById('themeBtn');
+    if(btn) btn.innerHTML = saved === 'dark' ? '☀️ Tema' : '🌙 Tema';
+  });
+})();
+
+// ===== Tela 1: Ritmo necessário + Alerta (usa DATA.tx / filtros) =====
+function renderRitmo_unused1(){
+  const elDias = document.getElementById("rtDias");
+  const elFat  = document.getElementById("rtFatDia");
+  const elKg   = document.getElementById("rtKgDia");
+  const elAl   = document.getElementById("rtAlert");
+  if(!elDias || !elFat || !elKg || !elAl) return; // só existe na Tela 1
+
+  const diasNoMes = new Date(state.year, state.month, 0).getDate();
+  const hoje = new Date();
+  const ehMesAtual = (state.year===hoje.getFullYear() && state.month===hoje.getMonth()+1);
+  const ehMesmoMes = (state.month===hoje.getMonth()+1);
+
+  // Se for mês atual: usa dia de hoje. Se for mês passado/futuro: usa meio do mês como referência.
+  const diasPassados = Math.max(1, ehMesAtual ? hoje.getDate() : Math.ceil(diasNoMes/2));
+  const diasRestantes = Math.max(0, diasNoMes - diasPassados);
+
+  // Mês (ignora filtro de semana — queremos ritmo do mês inteiro)
+  const monthTx = filterTx({team: state.team, year: state.year, month: state.month, week: null});
+  const realizadoMes = monthTx.reduce((a,r)=>a+(r.valor||0),0);
+  const kgMes = monthTx.reduce((a,r)=>a+(r.kg||0),0);
+
+  // Meta do time (mesma lógica do painel: soma metas individuais)
+  const metaObj = (typeof getMetaMensalForState === "function") ? getMetaMensalForState(state) : (DATA.config.metaMensal||{});
+  const metaMes = Object.values(metaObj||{}).reduce((a,v)=>a+(v||0),0);
+  const falta = Math.max(0, metaMes - realizadoMes);
+
+  // Converte falta em kg por aproximação usando preço médio do mês (se não tiver kg, assume 0)
+  const precoMedio = kgMes>0 ? (realizadoMes/kgMes) : 0;
+  const faltaKg = (precoMedio>0) ? (falta/precoMedio) : 0;
+
+  const ritmoNecFat = (diasRestantes>0) ? (falta/diasRestantes) : 0;
+  const ritmoNecKg  = (diasRestantes>0) ? (faltaKg/diasRestantes) : 0;
+
+  const ritmoAtualFat = (diasPassados>0) ? (realizadoMes/diasPassados) : 0;
+
+  elDias.textContent = diasRestantes.toLocaleString("pt-BR");
+  elFat.textContent  = ritmoNecFat.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  elKg.textContent   = Math.round(ritmoNecKg).toLocaleString("pt-BR") + " kg";
+
+  const ok = ritmoAtualFat >= ritmoNecFat;
+  elAl.classList.toggle("ok", ok);
+  elAl.classList.toggle("bad", !ok);
+  elAl.innerHTML = ok ? "🟢 Ritmo atual suficiente" : "🔴 Ritmo atual abaixo do necessário";
+}
+
+// injeta no render principal, sem alterar o resto
+(function(){
+  if(typeof render === "function" && !window.__RITMO_PATCH__){
+    window.__RITMO_PATCH__ = true;
+    const _old = render;
+    render = function(){
+      _old();
+      try{ renderRitmo(); }catch(e){}
+    };
+    try{ renderRitmo(); }catch(e){}
+  }
+})();
+
+</script>
+
+
+<script>
+/* ===== Tela 3: Quadro Meta x Realizado x Falta (por produto) ===== */
+(function(){
+  // Metas por produto (mensal) — ajuste mês a mês aqui
+  const META_PROD_MENSAL = {
+    "2026-01": {
+      "Cobre":   { r: 3000000.00, kg: 31312 },
+      "Barras":  { r: 1000000.00, kg: 32468 },
+      "Alumínio":{ r:  170000.00, kg:  5236 }
+    },
+    "2026-02": {
+      "Cobre":   { r: 3000000.00, kg: 30272 },
+      "Barras":  { r: 1000000.00, kg: 28519 },
+      "Alumínio":{ r:  170000.00, kg:  2258 }
+    },
+    "2026-03": {
+      "Cobre":   { r: 3600000.00, kg: 38704 },
+      "Barras":  { r: 1100000.00, kg: 33831 },
+      "Alumínio":{ r:  300000.00, kg:  8144 }
+    },
+    "2026-04": {
+      "Cobre":   { r: 3200000.00, kg: 34283 },
+      "Barras":  { r: 1000000.00, kg: 31103 },
+      "Alumínio":{ r:  300000.00, kg:  9026 }
+    },
+    "2026-05": {
+      "Cobre":   { r: 3500000.00, kg: 37938 },
+      "Barras":  { r: 1150000.00, kg: 34959 },
+      "Alumínio":{ r:  350000.00, kg:  9000 }
+    }
+  };
+
+  function ymKey(y,m){ return `${y}-${String(m).padStart(2,"0")}`; }
+
+  function normProdForBoard(p){
+    const t = (p||"").toLowerCase();
+    if(t.includes("cobre")) return "Cobre";
+    if(t.includes("barra")) return "Barras";
+    if(t.includes("alum"))  return "Alumínio";
+    return null;
+  }
+
+  function fmtKg(v){ return num(v||0,0) + " kg"; }
+
+  function blockHTML(nome, cols, valuesHtml){
+    return `
+      <div class="metaProd">
+        <div class="metaProdName">${nome}</div>
+        <div class="metaSubHead ${cols===3?'three':''}">
+          ${cols===2 ? `<div>R$</div><div>Kg</div>` : `<div>${valuesHtml.h1}</div><div>Kg</div><div>%</div>`}
+        </div>
+        <div class="metaVals ${cols===3?'three':''}">
+          ${valuesHtml.v}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMetaProduto(){
+    const tbody = document.getElementById("metaProdRows");
+    if(!tbody) return;
+
+    const st = (typeof getFilterState === "function") ? getFilterState() : {year:2026, month:1, team:"Todos"};
+    const key = ymKey(st.year, st.month);
+    const metas = META_PROD_MENSAL[key];
+
+    if(!metas){
+      tbody.innerHTML = `<tr><td colspan="8" style="padding:14px; opacity:.85">Meta por produto não informada para <strong>${key}</strong>.</td></tr>`;
+      return;
+    }
+
+    // Realizado do mês (ignora filtro de semana)
+    const monthTx = filterTx({team: st.team, year: st.year, month: st.month, week: null});
+    const real = {"Cobre":{r:0,kg:0},"Barras":{r:0,kg:0},"Alumínio":{r:0,kg:0}};
+    monthTx.forEach(r=>{
+      const p = normProdForBoard(r.produto);
+      if(!p) return;
+      real[p].r += (r.valor||0);
+      const kgCorr = (typeof correctedKg==="function") ? correctedKg(r.nota, r.produto, (r.kg||0)) : (r.kg||0);
+      real[p].kg += kgCorr;
+    });
+
+    const order = ["Cobre","Barras","Alumínio"];
+
+    const totalMeta = {r:0,kg:0};
+    const totalReal = {r:0,kg:0};
+    order.forEach(p=>{
+      totalMeta.r += metas[p]?.r || 0;
+      totalMeta.kg += metas[p]?.kg || 0;
+      totalReal.r += real[p]?.r || 0;
+      totalReal.kg += real[p]?.kg || 0;
+    });
+
+    function pctMeta(realR, metaR){ return metaR>0 ? (realR/metaR*100) : 0; }
+
+    function rowHTML(nome, meta, rea, isTotal=false){
+      const pctM = pctMeta(rea.r, meta.r);
+      const w = Math.max(0, Math.min(100, pctM));
+      const gapR = Math.max(0, meta.r - rea.r);
+      const gapK = Math.max(0, meta.kg - rea.kg);
+
+      const bateuR = (meta.r > 0) && (rea.r >= meta.r);
+      const bateuK = (meta.kg > 0) && (rea.kg >= meta.kg);
+      const bateu = bateuR && bateuK;
+
+      const label = isTotal ? "Meta global batida" : "Meta batida";
+      const faltaRHtml = bateu ? `<span class="badge ok">${label}</span>` : brl(gapR);
+      const faltaKHtml = bateu ? `<span class="badge ok">${label}</span>` : num(gapK,0);
+
+      return `
+        <tr class="${isTotal?'totalRow':''}">
+          <td>${nome}</td>
+          <td class="right">${brl(meta.r)}</td>
+          <td class="right">${brl(rea.r)}</td>
+          <td class="right">
+            <div class="pctWrap">
+              <div class="pctBar" title="${pct(pctM,1)}"><div class="pctFill" style="width:${w}%"></div></div>
+              <div class="pctVal">${pct(pctM,1)}</div>
+            </div>
+          </td>
+          <td class="right">${faltaRHtml}</td>
+          <td class="right">${num(meta.kg,0)}</td>
+          <td class="right">${num(rea.kg,0)}</td>
+          <td class="right">${faltaKHtml}</td>
+        </tr>
+      `;
+    }
+
+    let rows = "";
+    order.forEach(p=>{
+      rows += rowHTML(p, metas[p], real[p], false);
+    });
+    rows += rowHTML("Total Geral", totalMeta, totalReal, true);
+
+    tbody.innerHTML = rows;
+  }
+
+
+  
+  function renderWeekCards(){
+    const row = document.getElementById("weekCardsRow");
+    if(!row) return;
+
+    const rowPrev = document.getElementById("weekCardsRowPrev");
+    const wrapPrev = document.getElementById("prevWeeksWrap");
+    const lblPrev  = document.getElementById("prevWeeksLabel");
+
+    const st = (typeof getFilterState === "function") ? getFilterState() : {year:2026, month:1, team:"Todos", week:null};
+
+    // --- helper: mês fechado (mesma lógica do ritmo) ---
+    function isMonthClosed(y, mo){
+      const baseMonthTx = filterTx({team: st.team, year: y, month: mo, week: null});
+      if(!baseMonthTx.length){
+        // Mês sem vendas: se for passado (ano/mês menor que hoje), consideramos fechado; senão aberto.
+        const hoje = new Date();
+        const sel = new Date(y, mo-1, 1);
+        const cur = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        return sel < cur;
+      }
+      const maxDateStr = baseMonthTx.reduce((m,r)=> (String(r.data) > String(m) ? r.data : m), baseMonthTx[0].data);
+      const parts = String(maxDateStr).split("-");
+      let refDate = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+      // Próximo dia útil (SP). Se pular pro mês seguinte, o mês está fechado.
+      refDate = _nextBusinessDaySP(refDate, y, mo);
+      return (refDate.getFullYear() !== y) || ((refDate.getMonth()+1) !== mo);
+    }
+
+    const key = ymKey(st.year, st.month);
+    const weeks = (DATA?.config?.filters?.weeksByYearMonth?.[key] || []).slice().sort((a,b)=>a-b);
+
+    if(!weeks.length){
+      row.innerHTML = `<div class="note" style="padding:10px 0; opacity:.8">Sem semanas cadastradas para <strong>${key}</strong>.</div>`;
+      if(wrapPrev) wrapPrev.style.display = "none";
+      return;
+    }
+
+    // --- linha do ano selecionado ---
+    row.innerHTML = "";
+    weeks.forEach(w=>{
+      const tx = filterTx({team: st.team, year: st.year, month: st.month, week: w});
+      const fat = tx.reduce((a,r)=>a+(r.valor||0),0);
+      const kg  = tx.reduce((a,r)=>a+((typeof correctedKg==="function") ? correctedKg(r.nota, r.produto, (r.kg||0)) : (r.kg||0)),0);
+
+      const card = document.createElement("div");
+      card.className = "weekCard" + ((Number(st.week)===Number(w)) ? " active" : "");
+      card.innerHTML = `
+        <div class="wkTitle">Semana ${String(w).padStart(2,"0")}</div>
+        <div class="wkValue">${brl(fat)}</div>
+        <div class="wkMini">Kg na semana: ${num(kg,0)} kg</div>
+      `;
+      row.appendChild(card);
+    });
+
+    // --- ano anterior: somente quando o mês estiver fechado ---
+    const closed = isMonthClosed(Number(st.year), Number(st.month));
+    const prevYear = Number(st.year) - 1;
+
+    // Regra: só mostrar comparação quando houver ano anterior na base e o ano atual não for histórico sem comparativo.
+    const allowPrev = closed && (prevYear >= 2025) && (Number(st.year) >= 2026);
+
+    if(!wrapPrev || !rowPrev || !lblPrev){
+      return;
+    }
+
+    if(!allowPrev){
+      wrapPrev.style.display = "none";
+      return;
+    }
+
+    const keyPrev = ymKey(prevYear, st.month);
+    const weeksPrev = (DATA?.config?.filters?.weeksByYearMonth?.[keyPrev] || []).slice().sort((a,b)=>a-b);
+
+    if(!weeksPrev.length){
+      wrapPrev.style.display = "none";
+      return;
+    }
+
+    lblPrev.innerHTML = `Ano anterior (<strong>${keyPrev}</strong>) — valores por semana`;
+    wrapPrev.style.display = "block";
+
+    rowPrev.innerHTML = "";
+    weeksPrev.forEach(w=>{
+      const tx = filterTx({team: st.team, year: prevYear, month: st.month, week: w});
+      const fat = tx.reduce((a,r)=>a+(r.valor||0),0);
+      const kg  = tx.reduce((a,r)=>a+((typeof correctedKg==="function") ? correctedKg(r.nota, r.produto, (r.kg||0)) : (r.kg||0)),0);
+
+      const card = document.createElement("div");
+      card.className = "weekCard";
+      card.innerHTML = `
+        <div class="wkTitle">Semana ${String(w).padStart(2,"0")} (${prevYear})</div>
+        <div class="wkValue">${brl(fat)}</div>
+        <div class="wkMini">Kg na semana: ${num(kg,0)} kg</div>
+      `;
+      rowPrev.appendChild(card);
+    });
+  }
+
+
+
+  // Injeta no render principal, sem mexer no resto
+  if(typeof window.render === "function" && !window.__META_PROD_PATCH__){
+    window.__META_PROD_PATCH__ = true;
+    const _old = window.render;
+    window.render = function(){
+      _old();
+      try{ renderMetaProduto(); }catch(e){}
+      try{ renderWeekCards(); }catch(e){}
+    };
+    try{ renderMetaProduto(); }catch(e){}
+      try{ renderWeekCards(); }catch(e){}
+  } else {
+    document.addEventListener("DOMContentLoaded", ()=>{ try{ renderMetaProduto(); }catch(e){}
+      try{ renderWeekCards(); }catch(e){} });
+  }
+})();
+</script>
+
+
+<script>
+
+// ===== PATCH: Fechamento do mês (Ranking do time na Tela 1) =====
+function __renderRankFechamento(){
+  const st = (typeof getFilterState==='function') ? getFilterState() : {year:2026, month:2, team:"Todos"};
+  const wrap = document.getElementById("rankFechamentoWrap");
+  const body = document.getElementById("rankFechamentoRows");
+  if(!wrap || !body || typeof filterTx!=='function') return;
+
+  const monthTx = filterTx({team: st.team, year: Number(st.year), month: Number(st.month), week: null});
+  const metas = (typeof getMetaMensalForState === "function") ? getMetaMensalForState(st) : ((DATA && DATA.config && DATA.config.metaMensal) ? DATA.config.metaMensal : {});
+
+  const sellers = Object.keys(metas||{}).filter(v => (Number(metas[v])||0) > 0);
+
+  const rows = sellers.map(v=>{
+    const meta = Number(metas[v])||0;
+    let realizado = 0;
+    monthTx.forEach(r=>{ if(String(r.vendedor)===String(v)) realizado += (Number(r.valor)||0); });
+    const pctA = meta>0 ? (realizado/meta*100) : 0;
+    return {v, meta, realizado, pctA};
+  }).sort((a,b)=>b.pctA-a.pctA);
+
+  body.innerHTML = "";
+  rows.forEach((r,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><strong>${r.v}</strong>${r.pctA>=100 ? ' <span class="meta-batida">✅ Meta batida</span>' : ''}</td>
+      <td class="right">${brl(r.realizado)}</td>
+      <td class="right">${brl(r.meta)}</td>
+      <td class="right"><strong>${pct(r.pctA,1)}</strong></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+(function(){
+  if(typeof render === "function" && !window.__FECHAMENTO_RANK_PATCH__){
+    window.__FECHAMENTO_RANK_PATCH__ = true;
+    const _old = render;
+    render = function(){
+      _old();
+
+      try{
+        const st = getFilterState();
+        const isTela1 = (document.querySelector('.carouselSlide.active')?.getAttribute('data-idx')||'0') === '0';
+
+        // Regra automática de fechamento:
+// 1) Mês selecionado menor que o mês atual (ou ano menor) => fechado
+// 2) Se estiver no mesmo mês/ano atuais, considera fechado quando já PASSOU do último dia útil do mês
+function __lastBusinessDaySP(year, month){
+  // tenta usar a função do painel (se existir) para respeitar feriados SP; senão, usa apenas seg-sex.
+  const has = (typeof _isBusinessDaySP === 'function');
+  let d = new Date(year, month, 0); // último dia do mês (month é 1-12)
+  while(d.getMonth() === month-1){
+    if(has){
+      if(_isBusinessDaySP(d)) return d;
+    }else{
+      const wd = d.getDay(); // 0 dom ... 6 sab
+      if(wd!==0 && wd!==6) return d;
+    }
+    d.setDate(d.getDate()-1);
+  }
+  return new Date(year, month-1, 1);
+}
+const now = new Date();
+const cy = now.getFullYear();
+const cm = now.getMonth()+1;
+
+let isClosed = false;
+const sy = Number(st.year);
+const sm = Number(st.month);
+
+if(sy < cy) isClosed = true;
+else if(sy === cy && sm < cm) isClosed = true;
+else if(sy === cy && sm === cm){
+  const lbd = __lastBusinessDaySP(sy, sm);
+  // "já passou" => estritamente maior que o último dia útil (ex.: último útil é sexta, sábado/domingo já fechou)
+  const today = new Date(cy, cm-1, now.getDate());
+  isClosed = today >= new Date(lbd.getFullYear(), lbd.getMonth(), lbd.getDate());
+}
+
+
+        const rw = document.getElementById("ritmoWrap");
+        const pw = document.getElementById("projWrap");
+        const kw = document.getElementById("rankFechamentoWrap");
+
+        if(isClosed && isTela1){
+          if(rw) rw.style.display='none';
+          if(pw) pw.style.display='none';
+          if(kw) kw.style.display='block';
+          __renderRankFechamento();
+        }else{
+          if(kw) kw.style.display='none';
+          if(rw) rw.style.display = isTela1 ? 'block' : 'none';
+          if(pw) pw.style.display = isTela1 ? 'block' : 'none';
+        }
+      }catch(e){}
+    };
+  }
+})();
+
+</script>
+
+<script id="evo-screen-script">
+const EVO_CONFIG = {
+  globalTarget: 53020000,
+  vendorTargets: {"Vieira":22820000.0,"Ricardo":6925000.0,"Débora":6925000.0,"Nazareno":4130000.0,"Osvaldo":3820000.0,"Bruna Dias":950000.0,"Representantes":7450000.0},
+  vendorOrder: ["Vieira", "Ricardo", "Débora", "Representantes", "Nazareno", "Osvaldo", "Bruna Dias"],
+  monthLabels: ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+};
+
+(function(){
+  function shortMoney(v){
+    const n = Number(v || 0);
+    if (Math.abs(n) >= 1000000) return 'R$ ' + (n / 1000000).toFixed(1).replace('.', ',') + ' mi';
+    if (Math.abs(n) >= 1000) return 'R$ ' + Math.round(n / 1000).toLocaleString('pt-BR') + ' mil';
+    return new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0}).format(n);
+  }
+
+  function getEvolutionState(){
+    try{
+      return (typeof getFilterState === 'function') ? getFilterState() : {
+        team: (DATA && DATA.config && DATA.config.filters && DATA.config.filters.default && DATA.config.filters.default.team) || 'Todos',
+        year: (DATA && DATA.config && DATA.config.filters && DATA.config.filters.default && DATA.config.filters.default.year) || new Date().getFullYear()
+      };
+    }catch(e){
+      return { team:'Todos', year:new Date().getFullYear() };
+    }
+  }
+
+  function teamMatches(row, team){
+    return team === 'Todos' ? true : row.equipe === team;
+  }
+
+  function inferVendorTeamMap(){
+    const map = {};
+    (DATA.tx || []).forEach(r=>{
+      const v = r && r.vendedor ? r.vendedor : null;
+      if(!v) return;
+      if(!map[v] && r.equipe) map[v] = r.equipe;
+    });
+    if(!map['Representantes']) map['Representantes'] = 'Representantes';
+    return map;
+  }
+
+  function getAllowedVendors(team){
+    const targetNames = Object.keys(EVO_CONFIG.vendorTargets || {});
+    const vendorTeamMap = inferVendorTeamMap();
+
+    if(team === 'Todos') return targetNames;
+
+    return targetNames.filter(v=>{
+      const inferred = vendorTeamMap[v];
+      if(team === 'Representantes') return inferred === 'Representantes' || v === 'Representantes';
+      if(team === 'Equipe Interna') return inferred !== 'Representantes' && v !== 'Representantes';
+      return inferred === team;
+    });
+  }
+
+  function buildEvolutionData(){
+    const state = getEvolutionState();
+    const year = Number(state.year);
+
+    // Tela 5: visão executiva da empresa. Ignora filtros de equipe, mês e semana.
+    const yearTx = (DATA.tx || []).filter(r => r && Number(r.ano) === year);
+
+    const months = (((DATA.config || {}).filters || {}).monthsByYear || {})[year] || [];
+    let running = 0;
+    const timeline = [];
+    let currentLabel = 'Ano';
+
+    months.forEach(m=>{
+      const monthTotal = yearTx
+        .filter(r => Number(r.mes) === Number(m))
+        .reduce((a,r)=> a + (Number(r.valor) || 0), 0);
+
+      if(monthTotal > 0){
+        running += monthTotal;
+        currentLabel = EVO_CONFIG.monthLabels[Number(m)-1] || String(m).padStart(2,'0');
+        timeline.push({
+          label: currentLabel,
+          value: running
+        });
+      }
+    });
+
+    const vendorOrder = EVO_CONFIG.vendorOrder.slice();
+    const vendors = vendorOrder.map(name=>{
+      const realized = yearTx
+        .filter(r => (r.vendedor || '—') === name)
+        .reduce((a,r)=> a + (Number(r.valor) || 0), 0);
+      const target = Number((EVO_CONFIG.vendorTargets || {})[name] || 0);
+      const pct = target ? (realized / target * 100) : 0;
+      return { name, realized, target, pct };
+    });
+
+    const targetFromVendors = vendors.reduce((a,v)=> a + (Number(v.target) || 0), 0);
+    const target = targetFromVendors || Number(EVO_CONFIG.globalTarget || 0);
+    const realized = yearTx.reduce((a,r)=> a + (Number(r.valor) || 0), 0);
+    const gap = Math.max(0, target - realized);
+    const pct = target ? (realized / target * 100) : 0;
+
+    return {
+      timeline,
+      global: { realized, target, gap, pct, currentLabel },
+      vendors
+    };
+  }
+
+  function renderEvolutionScreen(){
+    const data = buildEvolutionData();
+    const r = data.global;
+
+    const realizedEl = document.getElementById('evoRealizadoAno');
+    const pctEl = document.getElementById('evoPctAno');
+    const gapEl = document.getElementById('evoFaltaAno');
+    const currentPill = document.getElementById('evoCurrentPill');
+    const targetPill = document.getElementById('evoTargetPill');
+    const pointsEl = document.getElementById('evoPoints');
+    const vendorGrid = document.getElementById('evoVendorGrid');
+
+    if (!realizedEl || !pctEl || !gapEl || !currentPill || !pointsEl || !vendorGrid) return;
+
+    realizedEl.textContent = shortMoney(r.realized);
+    pctEl.textContent = r.pct.toFixed(1).replace('.', ',') + '%';
+    gapEl.textContent = shortMoney(r.gap);
+    currentPill.textContent = 'Atual: ' + (r.currentLabel || 'Ano');
+    if(targetPill) targetPill.textContent = 'Objetivo do ano: ' + shortMoney(r.target);
+
+    const pts = data.timeline.concat([{label:'Ano', value:r.target, target:true}]);
+    pointsEl.innerHTML = pts.map((p, idx) => {
+      const cls = p.target ? 'target' : (idx === data.timeline.length - 1 ? 'current' : '');
+      return `
+        <div class="evoPoint ${cls}">
+          <div class="evoPointVal">${shortMoney(p.value)}</div>
+          <div class="evoPointDot"></div>
+          <div class="evoPointLbl">${p.label}</div>
+        </div>
+      `;
+    }).join('');
+
+    vendorGrid.innerHTML = data.vendors.map((v) => {
+      const pct = Math.max(0, Math.min(v.pct, 100));
+      return `
+        <div class="evoVendorCard">
+          <div class="evoVendorName">${v.name}</div>
+          <div class="evoVendorReal">${shortMoney(v.realized)}</div>
+          <div class="evoVendorMeta">Meta anual: ${shortMoney(v.target)}</div>
+          <div class="evoVendorPctRow">
+            <div class="evoVendorPct">${v.pct.toFixed(1).replace('.', ',')}%</div>
+            <div class="note">atingido</div>
+          </div>
+          <div class="evoVendorBar">
+            <div class="evoVendorBarFill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.renderEvolutionScreen = renderEvolutionScreen;
+
+  function setSlideInfo(){
+    const info = document.getElementById('slideInfo');
+    if (info) info.textContent = info.textContent.replace('/4', '/5');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setSlideInfo();
+    setTimeout(renderEvolutionScreen, 200);
+    setTimeout(renderEvolutionScreen, 700);
+  });
+
+  const next = document.getElementById('slideNext');
+  const prev = document.getElementById('slidePrev');
+  if (next) next.addEventListener('click', function(){ setTimeout(renderEvolutionScreen, 250); setTimeout(setSlideInfo, 20); });
+  if (prev) prev.addEventListener('click', function(){ setTimeout(renderEvolutionScreen, 250); setTimeout(setSlideInfo, 20); });
+})();
+</script>
+
+</body>
+</html>
+
+<script>
+(function(){
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function qs(sel, root=document){ return root.querySelector(sel); }
+
+  let idx = 0;
+  function apply(){
+    const slides = qsa('.carouselSlide');
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    const info = qs('#slideInfo'); if(info) info.textContent = `${idx+1}/${slides.length}`;
+    qsa('.carouselDot').forEach(d=> d.classList.toggle('active', Number(d.dataset.slide)===idx));
+    const rw=document.getElementById('ritmoWrap'); if(rw) rw.style.display = (idx===0?'block':'none');
+    try{ renderRitmo(); }catch(e){}
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function next(){ const n=qsa('.carouselSlide').length; idx=(idx+1)%n; 
+  // Expor controles do carrossel para o toggle Auto
+  window.__carouselNext = next;
+  window.__carouselPrev = prev;
+  window.__carouselGo = (i)=>{ idx = (i+slides.length)%slides.length; apply(); };
+  window.__carouselCount = ()=> slides.length;
+apply(); }
+  function prev(){ const n=qsa('.carouselSlide').length; idx=(idx-1+n)%n; apply(); }
+
+  window.addEventListener('DOMContentLoaded', ()=>{
+    if(!qs('#carouselViewport')) return;
+    qs('#slideNext')?.addEventListener('click', next);
+    qs('#slidePrev')?.addEventListener('click', prev);
+    qsa('.carouselDot').forEach(d=> d.addEventListener('click', ()=>{ idx=Number(d.dataset.slide)||0; apply(); }));
+    document.addEventListener('keydown', (e)=>{ if(e.key==='ArrowRight') next(); if(e.key==='ArrowLeft') prev(); });
+    apply();
+  });
+})();
+
+// ===== Tela 1: Ritmo necessário + Alerta (usa DATA.tx / filtros) =====
+function renderRitmo_unused2(){
+  const elDias = document.getElementById("rtDias");
+  const elFat  = document.getElementById("rtFatDia");
+  const elKg   = document.getElementById("rtKgDia");
+  const elAl   = document.getElementById("rtAlert");
+  if(!elDias || !elFat || !elKg || !elAl) return; // só existe na Tela 1
+
+  const diasNoMes = new Date(state.year, state.month, 0).getDate();
+  const hoje = new Date();
+  const ehMesAtual = (state.year===hoje.getFullYear() && state.month===hoje.getMonth()+1);
+
+  // Se for mês atual: usa dia de hoje. Se for mês passado/futuro: usa meio do mês como referência.
+  const diasPassados = Math.max(1, ehMesAtual ? hoje.getDate() : Math.ceil(diasNoMes/2));
+  const diasRestantes = Math.max(0, diasNoMes - diasPassados);
+
+  // Mês (ignora filtro de semana — queremos ritmo do mês inteiro)
+  const monthTx = filterTx({team: state.team, year: state.year, month: state.month, week: null});
+  const realizadoMes = monthTx.reduce((a,r)=>a+(r.valor||0),0);
+  const kgMes = monthTx.reduce((a,r)=>a+(r.kg||0),0);
+
+  // Meta do time (mesma lógica do painel: soma metas individuais)
+  const metaObj = (typeof getMetaMensalForState === "function") ? getMetaMensalForState(state) : (DATA.config.metaMensal||{});
+  const metaMes = Object.values(metaObj||{}).reduce((a,v)=>a+(v||0),0);
+  const falta = Math.max(0, metaMes - realizadoMes);
+
+  // Converte falta em kg por aproximação usando preço médio do mês (se não tiver kg, assume 0)
+  const precoMedio = kgMes>0 ? (realizadoMes/kgMes) : 0;
+  const faltaKg = (precoMedio>0) ? (falta/precoMedio) : 0;
+
+  const ritmoNecFat = (diasRestantes>0) ? (falta/diasRestantes) : 0;
+  const ritmoNecKg  = (diasRestantes>0) ? (faltaKg/diasRestantes) : 0;
+
+  const ritmoAtualFat = (diasPassados>0) ? (realizadoMes/diasPassados) : 0;
+
+  elDias.textContent = diasRestantes.toLocaleString("pt-BR");
+  elFat.textContent  = ritmoNecFat.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  elKg.textContent   = Math.round(ritmoNecKg).toLocaleString("pt-BR") + " kg";
+
+  const ok = ritmoAtualFat >= ritmoNecFat;
+  elAl.classList.toggle("ok", ok);
+  elAl.classList.toggle("bad", !ok);
+  elAl.innerHTML = ok ? "🟢 Ritmo atual suficiente" : "🔴 Ritmo atual abaixo do necessário";
+}
+
+// injeta no render principal, sem alterar o resto
+(function(){
+  if(typeof render === "function" && !window.__RITMO_PATCH__){
+    window.__RITMO_PATCH__ = true;
+    const _old = render;
+    render = function(){
+      _old();
+      try{ renderRitmo(); }catch(e){}
+    };
+    try{ renderRitmo(); }catch(e){}
+  }
+})();
+
+</script>
