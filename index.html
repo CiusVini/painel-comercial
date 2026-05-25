@@ -2082,6 +2082,15 @@ setAuto(true);
 }
 carregarDadosPainel();
 
+// atualização automática a cada 30 segundos
+setInterval(() => {
+
+    carregarDadosPainel();
+
+    console.log("Painel atualizado automaticamente");
+
+}, 30000);
+
 // ===== Tela 1: Ritmo necessário + Alerta (usa DATA.tx / filtros) =====
 
 // --- Dias úteis (São Paulo - Capital): fins de semana + feriados nacionais/estaduais/municipais (principais) ---
