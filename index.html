@@ -917,7 +917,7 @@ body.theme-light .carouselSlide[data-idx="4"] .evoLine{
       </div>
 
 <div class="note" style="margin-top:16px; margin-bottom:4px">
-        *Metas mensais informadas manualmente. Realizado considera o mês selecionado (ignora filtro de semana).
+        *Metas mensais carregadas da aba META_PRODUTOS. Realizado considera o mês selecionado (ignora filtro de semana).
       </div>
     </div>
   </div>
@@ -930,7 +930,7 @@ body.theme-light .carouselSlide[data-idx="4"] .evoLine{
 
     <div class="grid">
       <div class="card span-12">
-        <div class="label">Preço alvo (R$/kg) — referência para o time (salva neste dispositivo)</div>
+        <div class="label">Preço alvo (R$/kg) — referência da aba META_PRODUTOS</div>
         <div class="mini" style="margin-top:10px; gap:14px; align-items:flex-end; flex-wrap:wrap">
           <div class="control" style="min-width:210px">
             <label style="color:rgba(233,237,247,.75);font-size:11px">Cobre</label>
@@ -1122,13 +1122,63 @@ function badge(p){
 function medal(i){ return i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "🏅"; }
 
 // ---------- Alvos de preço (localStorage) ----------
+function __normProdutoAlvoKey(produto){
+  const p = String(produto || "").toLowerCase();
+  if(p.includes("cobre")) return "Cobre";
+  if(p.includes("barra")) return "Barra";
+  if(p.includes("alum")) return "Alumínio";
+  return null;
+}
+
+function __getMetaProdutoMesAtual(){
+  try{
+    if(!DATA || !DATA.config || !DATA.config.metaProdutos) return null;
+
+    const yEl = document.getElementById("yearSel");
+    const mEl = document.getElementById("monthSel");
+    const year = Number(yEl && yEl.value);
+    const month = Number(mEl && mEl.value);
+
+    if(!year || !month) return null;
+
+    const key = `${year}-${String(month).padStart(2,"0")}`;
+    return DATA.config.metaProdutos[key] || null;
+  }catch(e){
+    return null;
+  }
+}
+
 function loadPriceTargets(){
+  const alvos = { Cobre:null, Barra:null, "Alumínio":null };
+
+  // Prioridade 1: aba META_PRODUTOS via API
+  const metasMes = __getMetaProdutoMesAtual();
+  if(metasMes){
+    Object.keys(metasMes).forEach(prod=>{
+      const k = __normProdutoAlvoKey(prod);
+      if(!k) return;
+      const item = metasMes[prod] || {};
+      const valor = Number(
+        item.precoAlvo ?? item.preco_alvo ?? item.PRECO_ALVO ?? item["PREÇO_ALVO"] ?? item["preço_alvo"] ?? 0
+      );
+      if(valor > 0) alvos[k] = valor;
+    });
+  }
+
+  // Prioridade 2: localStorage apenas se a planilha não tiver preço alvo
   try{
     const raw = localStorage.getItem("alvosPrecoProduto");
-    if(raw) return JSON.parse(raw);
+    if(raw){
+      const saved = JSON.parse(raw);
+      Object.keys(alvos).forEach(k=>{
+        if(alvos[k] == null && saved[k] != null) alvos[k] = saved[k];
+      });
+    }
   }catch(e){}
-  return { Cobre:null, Barra:null, "Alumínio":null };
+
+  return alvos;
 }
+
 function savePriceTargets(t){
   try{ localStorage.setItem("alvosPrecoProduto", JSON.stringify(t)); }catch(e){}
 }
@@ -2476,34 +2526,8 @@ function renderRitmo_unused1(){
 <script>
 /* ===== Tela 3: Quadro Meta x Realizado x Falta (por produto) ===== */
 (function(){
-  // Metas por produto (mensal) — ajuste mês a mês aqui
-  const META_PROD_MENSAL = {
-    "2026-01": {
-      "Cobre":   { r: 3000000.00, kg: 31312 },
-      "Barras":  { r: 1000000.00, kg: 32468 },
-      "Alumínio":{ r:  170000.00, kg:  5236 }
-    },
-    "2026-02": {
-      "Cobre":   { r: 3000000.00, kg: 30272 },
-      "Barras":  { r: 1000000.00, kg: 28519 },
-      "Alumínio":{ r:  170000.00, kg:  2258 }
-    },
-    "2026-03": {
-      "Cobre":   { r: 3600000.00, kg: 38704 },
-      "Barras":  { r: 1100000.00, kg: 33831 },
-      "Alumínio":{ r:  300000.00, kg:  8144 }
-    },
-    "2026-04": {
-      "Cobre":   { r: 3200000.00, kg: 34283 },
-      "Barras":  { r: 1000000.00, kg: 31103 },
-      "Alumínio":{ r:  300000.00, kg:  9026 }
-    },
-    "2026-05": {
-      "Cobre":   { r: 3500000.00, kg: 37938 },
-      "Barras":  { r: 1150000.00, kg: 34959 },
-      "Alumínio":{ r:  350000.00, kg:  9000 }
-    }
-  };
+  // Metas por produto agora vêm da aba META_PRODUTOS via API:
+  // DATA.config.metaProdutos["AAAA-MM"][produto] = { metaR$, metaKg, precoAlvo }
 
   function ymKey(y,m){ return `${y}-${String(m).padStart(2,"0")}`; }
 
@@ -2513,6 +2537,27 @@ function renderRitmo_unused1(){
     if(t.includes("barra")) return "Barras";
     if(t.includes("alum"))  return "Alumínio";
     return null;
+  }
+
+  function getMetaProdutosForState(st){
+    const key = ymKey(st.year, st.month);
+    const raw = DATA?.config?.metaProdutos?.[key] || null;
+    if(!raw) return null;
+
+    const metas = {};
+    Object.keys(raw).forEach(prod=>{
+      const p = normProdForBoard(prod);
+      if(!p) return;
+
+      const item = raw[prod] || {};
+      metas[p] = {
+        r: Number(item["metaR$"] ?? item.metaR ?? item.meta_r ?? item.META_R ?? item.r ?? 0) || 0,
+        kg: Number(item.metaKg ?? item.meta_kg ?? item.META_KG ?? item.kg ?? 0) || 0,
+        precoAlvo: Number(item.precoAlvo ?? item.preco_alvo ?? item.PRECO_ALVO ?? item["PREÇO_ALVO"] ?? item["preço_alvo"] ?? 0) || null
+      };
+    });
+
+    return Object.keys(metas).length ? metas : null;
   }
 
   function fmtKg(v){ return num(v||0,0) + " kg"; }
@@ -2537,10 +2582,10 @@ function renderRitmo_unused1(){
 
     const st = (typeof getFilterState === "function") ? getFilterState() : {year:2026, month:1, team:"Todos"};
     const key = ymKey(st.year, st.month);
-    const metas = META_PROD_MENSAL[key];
+    const metas = getMetaProdutosForState(st);
 
     if(!metas){
-      tbody.innerHTML = `<tr><td colspan="8" style="padding:14px; opacity:.85">Meta por produto não informada para <strong>${key}</strong>.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="padding:14px; opacity:.85">Meta por produto não informada para <strong>${key}</strong>. Verifique a aba <strong>META_PRODUTOS</strong> e a publicação da API.</td></tr>`;
       return;
     }
 
@@ -2603,7 +2648,7 @@ function renderRitmo_unused1(){
 
     let rows = "";
     order.forEach(p=>{
-      rows += rowHTML(p, metas[p], real[p], false);
+      rows += rowHTML(p, metas[p] || {r:0,kg:0}, real[p] || {r:0,kg:0}, false);
     });
     rows += rowHTML("Total Geral", totalMeta, totalReal, true);
 
