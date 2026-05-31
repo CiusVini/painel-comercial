@@ -686,6 +686,29 @@ body.theme-dark .control label{
 .evoVendorBarFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1ea7ff,#ff5b7f);width:0%}
 @media (max-width:1180px){.evoVendorGrid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:760px){.evoTopStats{grid-template-columns:1fr}.evoVendorGrid{grid-template-columns:1fr}.evoPointVal{font-size:14px}.evoPointLbl{font-size:12px}}
+
+/* Ajuste Tela 5 no tema claro: mantém os números e textos legíveis sem alterar estrutura */
+body.theme-light .carouselSlide[data-idx="4"] .section-title h2,
+body.theme-light .carouselSlide[data-idx="4"] .section-title .hint,
+body.theme-light .carouselSlide[data-idx="4"] .pill,
+body.theme-light .carouselSlide[data-idx="4"] .evoStatLabel,
+body.theme-light .carouselSlide[data-idx="4"] .evoStatValue,
+body.theme-light .carouselSlide[data-idx="4"] .evoPointVal,
+body.theme-light .carouselSlide[data-idx="4"] .evoPointLbl,
+body.theme-light .carouselSlide[data-idx="4"] .evoVendorName,
+body.theme-light .carouselSlide[data-idx="4"] .evoVendorReal,
+body.theme-light .carouselSlide[data-idx="4"] .evoVendorMeta{
+  color: rgba(17,24,39,.92) !important;
+}
+body.theme-light .carouselSlide[data-idx="4"] .evoStat,
+body.theme-light .carouselSlide[data-idx="4"] .evoVendorCard{
+  border-color: rgba(17,24,39,.14) !important;
+  background: rgba(17,24,39,.03) !important;
+}
+body.theme-light .carouselSlide[data-idx="4"] .evoLine{
+  border-color: rgba(17,24,39,.10) !important;
+}
+
 </style>
 
 </head>
@@ -2025,7 +2048,10 @@ function init(){
   document.getElementById("fsBtn").addEventListener("click", toggleFullscreen);
 
   const autoBtn = document.getElementById("autoBtn");
-  autoBtn.addEventListener("click", ()=> setAuto(!autoOn));
+  if(autoBtn && !autoBtn.dataset.boundAuto){
+    autoBtn.addEventListener("click", ()=> setAuto(!autoOn));
+    autoBtn.dataset.boundAuto = "1";
+  }
 
   window.addEventListener("resize", ()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(render, 120); });
 
@@ -2052,7 +2078,8 @@ function init(){
     });
   }
 
-setAuto(true);
+const autoPref = (()=>{ try{ return localStorage.getItem('painelAuto'); }catch(e){ return null; }})();
+setAuto(autoPref === null ? true : autoPref === '1');
 
   // ranking: alternar critério de ordenação
   document.querySelectorAll(".tbtn").forEach(btn=>{
